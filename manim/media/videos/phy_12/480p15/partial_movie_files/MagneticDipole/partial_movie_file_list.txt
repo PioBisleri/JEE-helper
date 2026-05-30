@@ -1,0 +1,9 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_12/480p15/partial_movie_files/MagneticDipole/2340480722_1801231973_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_12/480p15/partial_movie_files/MagneticDipole/875235068_520170386_2912407334.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_12/480p15/partial_movie_files/MagneticDipole/875235068_218950523_232265060.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_12/480p15/partial_movie_files/MagneticDipole/875235068_3758049430_451708633.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_12/480p15/partial_movie_files/MagneticDipole/875235068_3963542485_1546547143.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_12/480p15/partial_movie_files/MagneticDipole/875235068_2420569975_2828619967.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_12/480p15/partial_movie_files/MagneticDipole/875235068_1868708950_3452532909.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_12/480p15/partial_movie_files/MagneticDipole/875235068_1432596116_3751980038.webm'

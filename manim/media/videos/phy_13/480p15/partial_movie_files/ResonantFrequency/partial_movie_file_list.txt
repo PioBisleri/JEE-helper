@@ -1,0 +1,9 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/ResonantFrequency/2340480722_3787199412_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/ResonantFrequency/875235068_2478946995_565961694.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/ResonantFrequency/875235068_347208823_1451242466.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/ResonantFrequency/875235068_1160208147_1408872253.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/ResonantFrequency/875235068_3549979067_2906363999.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/ResonantFrequency/875235068_1815855183_326493474.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/ResonantFrequency/875235068_2635260370_172805140.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/ResonantFrequency/875235068_1432596116_3335799272.webm'

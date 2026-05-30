@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_07/480p15/partial_movie_files/SincLimit/2340480722_3980551222_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_07/480p15/partial_movie_files/SincLimit/875235068_1515324475_3412645992.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_07/480p15/partial_movie_files/SincLimit/875235068_3489704259_3985830494.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_07/480p15/partial_movie_files/SincLimit/875235068_2275038100_3230824970.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_07/480p15/partial_movie_files/SincLimit/875235068_594834025_1760673444.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_07/480p15/partial_movie_files/SincLimit/875235068_143797872_120570347.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_07/480p15/partial_movie_files/SincLimit/875235068_2872842549_3201160008.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_07/480p15/partial_movie_files/SincLimit/875235068_779851373_1722926502.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_07/480p15/partial_movie_files/SincLimit/875235068_1432596116_3552308290.webm'

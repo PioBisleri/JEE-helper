@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_03/480p15/partial_movie_files/QuadraticFormula/2340480722_2229872206_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_03/480p15/partial_movie_files/QuadraticFormula/875235068_4227580817_3328434943.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_03/480p15/partial_movie_files/QuadraticFormula/875235068_2364129192_101577309.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_03/480p15/partial_movie_files/QuadraticFormula/875235068_281719549_1117083408.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_03/480p15/partial_movie_files/QuadraticFormula/875235068_3071597480_3554166860.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_03/480p15/partial_movie_files/QuadraticFormula/875235068_2362781172_2802596589.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_03/480p15/partial_movie_files/QuadraticFormula/875235068_406096287_199473931.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_03/480p15/partial_movie_files/QuadraticFormula/875235068_2869343180_2636861543.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_03/480p15/partial_movie_files/QuadraticFormula/875235068_1432596116_4063638635.webm'

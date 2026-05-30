@@ -1,0 +1,9 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/FirstLawThermo/2340480722_3275728374_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/FirstLawThermo/875235068_3858095928_3127187096.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/FirstLawThermo/875235068_2633124674_2497905764.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/FirstLawThermo/875235068_2452257227_4107716344.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/FirstLawThermo/875235068_1927701684_3207125174.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/FirstLawThermo/875235068_1469658493_40882420.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/FirstLawThermo/875235068_3110382749_2743012179.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/FirstLawThermo/875235068_1432596116_3183856881.webm'

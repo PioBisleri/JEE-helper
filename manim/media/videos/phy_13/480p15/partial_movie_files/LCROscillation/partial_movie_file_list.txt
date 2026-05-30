@@ -1,0 +1,9 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/LCROscillation/2340480722_615279269_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/LCROscillation/875235068_3688224768_2850009781.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/LCROscillation/875235068_1387195898_2037941274.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/LCROscillation/875235068_1336526455_466071839.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/LCROscillation/875235068_4171334012_4062135042.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/LCROscillation/875235068_3221918794_1308064366.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/LCROscillation/875235068_1749153191_5008259.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/LCROscillation/875235068_1432596116_3209442952.webm'

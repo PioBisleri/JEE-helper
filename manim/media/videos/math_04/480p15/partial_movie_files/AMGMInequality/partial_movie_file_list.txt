@@ -1,0 +1,12 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_04/480p15/partial_movie_files/AMGMInequality/2340480722_1868993591_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_04/480p15/partial_movie_files/AMGMInequality/875235068_643068619_2349400903.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_04/480p15/partial_movie_files/AMGMInequality/875235068_4054002613_1304889755.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_04/480p15/partial_movie_files/AMGMInequality/875235068_2083670445_229349800.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_04/480p15/partial_movie_files/AMGMInequality/875235068_2971172680_1912444374.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_04/480p15/partial_movie_files/AMGMInequality/875235068_2343436627_2439002711.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_04/480p15/partial_movie_files/AMGMInequality/875235068_2280639223_1349262623.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_04/480p15/partial_movie_files/AMGMInequality/875235068_1255100338_3587223921.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_04/480p15/partial_movie_files/AMGMInequality/875235068_2649536087_2426529148.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_04/480p15/partial_movie_files/AMGMInequality/875235068_1149816636_4193837615.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_04/480p15/partial_movie_files/AMGMInequality/875235068_1432596116_2751531347.webm'

@@ -1,0 +1,8 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/SHMPeriod/2340480722_2527300649_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/SHMPeriod/875235068_2209987854_73202502.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/SHMPeriod/875235068_1350639638_493428606.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/SHMPeriod/875235068_1757829753_4228925531.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/SHMPeriod/875235068_1906794065_3960887430.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/SHMPeriod/875235068_3425486526_2304375562.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/SHMPeriod/875235068_1432596116_3059407454.webm'

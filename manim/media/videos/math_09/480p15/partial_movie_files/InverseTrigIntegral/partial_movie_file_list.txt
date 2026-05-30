@@ -1,0 +1,9 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_09/480p15/partial_movie_files/InverseTrigIntegral/2340480722_1282216311_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_09/480p15/partial_movie_files/InverseTrigIntegral/875235068_3739660944_1202799814.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_09/480p15/partial_movie_files/InverseTrigIntegral/875235068_2506229740_3426992018.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_09/480p15/partial_movie_files/InverseTrigIntegral/875235068_381384067_2705585020.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_09/480p15/partial_movie_files/InverseTrigIntegral/875235068_3397528485_797784048.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_09/480p15/partial_movie_files/InverseTrigIntegral/875235068_690202036_610353067.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_09/480p15/partial_movie_files/InverseTrigIntegral/875235068_2081859369_1331785887.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_09/480p15/partial_movie_files/InverseTrigIntegral/875235068_1432596116_1910310633.webm'

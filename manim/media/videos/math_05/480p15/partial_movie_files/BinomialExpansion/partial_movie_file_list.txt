@@ -1,0 +1,9 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_05/480p15/partial_movie_files/BinomialExpansion/2340480722_2746796444_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_05/480p15/partial_movie_files/BinomialExpansion/875235068_1599606522_472322249.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_05/480p15/partial_movie_files/BinomialExpansion/875235068_1618295286_4010046188.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_05/480p15/partial_movie_files/BinomialExpansion/875235068_2636365808_1368704149.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_05/480p15/partial_movie_files/BinomialExpansion/875235068_3070355749_4189974918.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_05/480p15/partial_movie_files/BinomialExpansion/875235068_2193008796_3752749716.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_05/480p15/partial_movie_files/BinomialExpansion/875235068_1397635552_1731876274.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_05/480p15/partial_movie_files/BinomialExpansion/875235068_1432596116_269554743.webm'

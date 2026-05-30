@@ -1,0 +1,12 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/EllipseConic/2340480722_41881434_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/EllipseConic/875235068_3122237595_3260285700.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/EllipseConic/875235068_1882883425_25796789.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/EllipseConic/875235068_2685771645_3873423625.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/EllipseConic/875235068_3607563080_1206466328.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/EllipseConic/875235068_1198950908_200484418.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/EllipseConic/875235068_2830535629_524866576.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/EllipseConic/875235068_2468153885_3730656886.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/EllipseConic/875235068_1405315203_465267338.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/EllipseConic/875235068_2057360977_1083991113.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/EllipseConic/875235068_1432596116_2061559690.webm'

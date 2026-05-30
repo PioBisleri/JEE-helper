@@ -1,0 +1,8 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_08/480p15/partial_movie_files/TangentLine/2340480722_4057166731_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_08/480p15/partial_movie_files/TangentLine/875235068_3010973870_3411896505.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_08/480p15/partial_movie_files/TangentLine/875235068_3921647041_2139542980.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_08/480p15/partial_movie_files/TangentLine/875235068_64337_3184263850.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_08/480p15/partial_movie_files/TangentLine/875235068_86549202_3337648105.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_08/480p15/partial_movie_files/TangentLine/875235068_1887689020_2335613027.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_08/480p15/partial_movie_files/TangentLine/875235068_1432596116_1574361352.webm'

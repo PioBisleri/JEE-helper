@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/NernstEquation/2340480722_204106547_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/NernstEquation/875235068_1722086385_4226837885.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/NernstEquation/875235068_3050226085_1097675870.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/NernstEquation/875235068_2980525084_2807636017.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/NernstEquation/875235068_1057657409_3668882302.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/NernstEquation/875235068_586599089_2912017149.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/NernstEquation/875235068_1187248321_1240301412.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/NernstEquation/875235068_312757317_4190187363.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/NernstEquation/875235068_1432596116_2705348181.webm'

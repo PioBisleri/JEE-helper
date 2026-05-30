@@ -1,0 +1,9 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/GaussLaw/2340480722_115630714_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/GaussLaw/875235068_2745648133_1514129535.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/GaussLaw/875235068_3272423559_4280953705.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/GaussLaw/875235068_3711574975_777872658.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/GaussLaw/875235068_3381330233_3265626512.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/GaussLaw/875235068_1969034132_15277020.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/GaussLaw/875235068_3416813121_274601389.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/GaussLaw/875235068_1432596116_197661549.webm'

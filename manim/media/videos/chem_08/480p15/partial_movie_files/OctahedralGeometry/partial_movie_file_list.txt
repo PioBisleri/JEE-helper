@@ -1,0 +1,11 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/OctahedralGeometry/2340480722_1814567411_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/OctahedralGeometry/875235068_1038121189_2369859283.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/OctahedralGeometry/875235068_2467886611_3140093921.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/OctahedralGeometry/875235068_1598433017_4067153028.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/OctahedralGeometry/875235068_2182220647_1067798764.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/OctahedralGeometry/875235068_3925710979_4059125319.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/OctahedralGeometry/875235068_183192037_1682694403.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/OctahedralGeometry/875235068_2211662821_3087658463.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/OctahedralGeometry/875235068_1686776452_2125038812.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/OctahedralGeometry/875235068_1432596116_3887397683.webm'

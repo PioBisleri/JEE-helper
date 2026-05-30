@@ -1,0 +1,12 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/SineRule/2340480722_1504907031_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/SineRule/875235068_3277699714_1398317321.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/SineRule/875235068_308768472_2941177430.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/SineRule/875235068_3173266518_3176092727.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/SineRule/875235068_1637735007_259735437.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/SineRule/875235068_4128037681_2848465503.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/SineRule/875235068_2440834060_3738847316.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/SineRule/875235068_517061517_2969644048.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/SineRule/875235068_2387524942_3409010825.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/SineRule/875235068_784369285_1066143725.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/SineRule/875235068_1432596116_1302954392.webm'

@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_14/480p15/partial_movie_files/BinomialDist/2340480722_36486851_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_14/480p15/partial_movie_files/BinomialDist/875235068_3936151318_2044721343.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_14/480p15/partial_movie_files/BinomialDist/875235068_2400327430_4189130609.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_14/480p15/partial_movie_files/BinomialDist/875235068_182761492_2858915620.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_14/480p15/partial_movie_files/BinomialDist/875235068_1027290162_2065215663.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_14/480p15/partial_movie_files/BinomialDist/875235068_3140505262_616081498.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_14/480p15/partial_movie_files/BinomialDist/875235068_1220061958_4192568789.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_14/480p15/partial_movie_files/BinomialDist/875235068_4155515057_2120400817.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_14/480p15/partial_movie_files/BinomialDist/875235068_1432596116_1883537202.webm'

@@ -1,0 +1,9 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/DopplerEffect/2340480722_56708165_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/DopplerEffect/875235068_2034547389_1828295025.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/DopplerEffect/875235068_3659742763_3275625722.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/DopplerEffect/875235068_2635718592_4116493673.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/DopplerEffect/875235068_2241241703_2930298948.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/DopplerEffect/875235068_2933279491_2414226138.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/DopplerEffect/875235068_1842878138_2863714085.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/DopplerEffect/875235068_1432596116_2785248984.webm'

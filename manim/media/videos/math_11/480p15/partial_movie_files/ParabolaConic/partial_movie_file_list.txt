@@ -1,0 +1,12 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/ParabolaConic/2340480722_2050990305_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/ParabolaConic/875235068_2765427227_2993872760.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/ParabolaConic/875235068_3072959627_2021465819.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/ParabolaConic/875235068_144119746_3303752800.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/ParabolaConic/875235068_552339651_3044144340.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/ParabolaConic/875235068_2910140951_2738231758.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/ParabolaConic/875235068_2432511160_597634633.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/ParabolaConic/875235068_1245116039_1505687104.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/ParabolaConic/875235068_1227006256_1305464323.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/ParabolaConic/875235068_1816149596_3198933068.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_11/480p15/partial_movie_files/ParabolaConic/875235068_1432596116_1133454978.webm'

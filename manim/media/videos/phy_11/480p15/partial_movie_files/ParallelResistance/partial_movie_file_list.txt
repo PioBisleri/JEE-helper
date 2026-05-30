@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_11/480p15/partial_movie_files/ParallelResistance/2340480722_359894263_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_11/480p15/partial_movie_files/ParallelResistance/875235068_1808284175_2698031902.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_11/480p15/partial_movie_files/ParallelResistance/875235068_4127047918_2126897079.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_11/480p15/partial_movie_files/ParallelResistance/875235068_4011905947_3555225711.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_11/480p15/partial_movie_files/ParallelResistance/875235068_1927799082_2703486989.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_11/480p15/partial_movie_files/ParallelResistance/875235068_4006905739_1358285470.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_11/480p15/partial_movie_files/ParallelResistance/875235068_1120697519_830159612.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_11/480p15/partial_movie_files/ParallelResistance/875235068_2043309610_1302238463.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_11/480p15/partial_movie_files/ParallelResistance/875235068_1432596116_2408084725.webm'

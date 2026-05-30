@@ -1,0 +1,9 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_08/480p15/partial_movie_files/Extrema/2340480722_2427502713_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_08/480p15/partial_movie_files/Extrema/875235068_3400034531_3656174095.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_08/480p15/partial_movie_files/Extrema/875235068_1022141188_932806569.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_08/480p15/partial_movie_files/Extrema/875235068_134774201_4233271276.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_08/480p15/partial_movie_files/Extrema/875235068_144139742_4169853629.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_08/480p15/partial_movie_files/Extrema/875235068_1243843565_230403039.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_08/480p15/partial_movie_files/Extrema/875235068_1809364379_3023269888.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_08/480p15/partial_movie_files/Extrema/875235068_1432596116_202263665.webm'

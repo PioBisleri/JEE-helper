@@ -1,0 +1,12 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/CarnotCycle/2340480722_2765353835_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/CarnotCycle/875235068_722939320_526587921.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/CarnotCycle/875235068_2581775104_1566903372.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/CarnotCycle/875235068_2727449798_540821625.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/CarnotCycle/875235068_1252776160_1704805391.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/CarnotCycle/875235068_187689531_4073220338.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/CarnotCycle/875235068_1961763322_1441057809.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/CarnotCycle/875235068_1984990908_1423759161.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/CarnotCycle/875235068_3362308688_3423444754.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/CarnotCycle/875235068_1914938562_3001340332.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_08/480p15/partial_movie_files/CarnotCycle/875235068_1432596116_1814772813.webm'

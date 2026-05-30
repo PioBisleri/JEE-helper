@@ -1,0 +1,11 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/CapacitorCharging/2340480722_2437389502_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/CapacitorCharging/875235068_3723703389_2694461516.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/CapacitorCharging/875235068_1573155048_1989563402.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/CapacitorCharging/875235068_995040577_2777690489.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/CapacitorCharging/875235068_2859818938_209932879.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/CapacitorCharging/875235068_3521803690_3192985366.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/CapacitorCharging/875235068_157833273_3392968017.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/CapacitorCharging/875235068_3962223418_4149114522.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/CapacitorCharging/875235068_1251157916_169843043.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_10/480p15/partial_movie_files/CapacitorCharging/875235068_1432596116_2834547996.webm'

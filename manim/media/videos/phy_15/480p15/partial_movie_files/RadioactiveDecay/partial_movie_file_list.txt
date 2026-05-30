@@ -1,0 +1,11 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/RadioactiveDecay/2340480722_1940023158_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/RadioactiveDecay/875235068_846620190_4017068423.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/RadioactiveDecay/875235068_1701927903_3040990044.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/RadioactiveDecay/875235068_4233971548_3850696736.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/RadioactiveDecay/875235068_2172910413_3871392179.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/RadioactiveDecay/875235068_4060912174_990544420.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/RadioactiveDecay/875235068_2247151544_2673293701.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/RadioactiveDecay/875235068_3257588790_3172543265.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/RadioactiveDecay/875235068_3584514842_1218991460.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/RadioactiveDecay/875235068_1432596116_2598262432.webm'

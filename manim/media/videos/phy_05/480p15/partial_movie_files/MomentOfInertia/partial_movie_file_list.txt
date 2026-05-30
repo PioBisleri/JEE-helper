@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_05/480p15/partial_movie_files/MomentOfInertia/2340480722_50438459_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_05/480p15/partial_movie_files/MomentOfInertia/875235068_2700016126_206995965.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_05/480p15/partial_movie_files/MomentOfInertia/875235068_1276411348_70426787.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_05/480p15/partial_movie_files/MomentOfInertia/875235068_1522875672_56977816.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_05/480p15/partial_movie_files/MomentOfInertia/875235068_1230563812_929384861.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_05/480p15/partial_movie_files/MomentOfInertia/875235068_501033688_2938504818.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_05/480p15/partial_movie_files/MomentOfInertia/875235068_3530595824_3409126081.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_05/480p15/partial_movie_files/MomentOfInertia/875235068_3039524448_970685868.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_05/480p15/partial_movie_files/MomentOfInertia/875235068_1432596116_3839735116.webm'

@@ -1,0 +1,12 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_03/480p15/partial_movie_files/Friction/2340480722_1613366494_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_03/480p15/partial_movie_files/Friction/875235068_1368015883_2172603221.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_03/480p15/partial_movie_files/Friction/875235068_13735866_1893686739.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_03/480p15/partial_movie_files/Friction/875235068_3960485930_1924772004.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_03/480p15/partial_movie_files/Friction/875235068_3446548431_3874208841.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_03/480p15/partial_movie_files/Friction/875235068_470675835_2136140252.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_03/480p15/partial_movie_files/Friction/875235068_638869431_910011378.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_03/480p15/partial_movie_files/Friction/875235068_3805272604_2658567002.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_03/480p15/partial_movie_files/Friction/875235068_1351548697_4268865262.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_03/480p15/partial_movie_files/Friction/875235068_2157762428_69152773.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_03/480p15/partial_movie_files/Friction/875235068_1432596116_1713471311.webm'

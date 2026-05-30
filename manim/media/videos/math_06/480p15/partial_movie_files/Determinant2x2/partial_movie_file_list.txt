@@ -1,0 +1,11 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_06/480p15/partial_movie_files/Determinant2x2/2340480722_876143862_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_06/480p15/partial_movie_files/Determinant2x2/875235068_787068380_3801203982.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_06/480p15/partial_movie_files/Determinant2x2/875235068_724904181_950278221.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_06/480p15/partial_movie_files/Determinant2x2/875235068_4042877048_2527856738.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_06/480p15/partial_movie_files/Determinant2x2/875235068_3703815895_204971114.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_06/480p15/partial_movie_files/Determinant2x2/875235068_3671963692_1697019729.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_06/480p15/partial_movie_files/Determinant2x2/875235068_1618441437_840202449.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_06/480p15/partial_movie_files/Determinant2x2/875235068_1432596116_1534626545.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_06/480p15/partial_movie_files/Determinant2x2/875235068_3512856845_1544509307.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_06/480p15/partial_movie_files/Determinant2x2/875235068_1432596116_257459983.webm'

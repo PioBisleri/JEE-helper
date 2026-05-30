@@ -1,0 +1,9 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/InterferenceFringes/2340480722_1762970685_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/InterferenceFringes/875235068_4262147354_2726562965.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/InterferenceFringes/875235068_715884651_2628926209.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/InterferenceFringes/875235068_2073829758_3963141000.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/InterferenceFringes/875235068_147109777_1386394559.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/InterferenceFringes/875235068_2757338192_1472324249.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/InterferenceFringes/875235068_1288570266_1475974824.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/InterferenceFringes/875235068_1432596116_230885893.webm'

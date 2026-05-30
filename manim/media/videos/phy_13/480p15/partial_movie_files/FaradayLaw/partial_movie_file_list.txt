@@ -1,0 +1,11 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/FaradayLaw/2340480722_381248950_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/FaradayLaw/875235068_3878267787_3119508480.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/FaradayLaw/875235068_3918483917_575665980.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/FaradayLaw/875235068_1667601265_2212751502.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/FaradayLaw/875235068_894148406_1352919487.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/FaradayLaw/875235068_2156152477_3333392252.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/FaradayLaw/875235068_1942473165_613903578.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/FaradayLaw/875235068_425490985_4159291641.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/FaradayLaw/875235068_2519106545_3771264905.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_13/480p15/partial_movie_files/FaradayLaw/875235068_1432596116_1655784880.webm'

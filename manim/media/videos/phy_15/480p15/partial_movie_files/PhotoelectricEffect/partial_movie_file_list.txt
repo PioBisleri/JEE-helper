@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/PhotoelectricEffect/2340480722_2372401657_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/PhotoelectricEffect/875235068_3265220260_612443610.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/PhotoelectricEffect/875235068_2803573175_329924930.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/PhotoelectricEffect/875235068_88226890_1586779302.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/PhotoelectricEffect/875235068_1517481982_3703654463.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/PhotoelectricEffect/875235068_905370607_3842616887.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/PhotoelectricEffect/875235068_2535829670_2833453671.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/PhotoelectricEffect/875235068_4121091284_3094566816.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_15/480p15/partial_movie_files/PhotoelectricEffect/875235068_1432596116_429098918.webm'

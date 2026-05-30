@@ -1,0 +1,11 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_02/480p15/partial_movie_files/RootsOfUnity/2340480722_1893259920_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_02/480p15/partial_movie_files/RootsOfUnity/875235068_3980805549_1965565629.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_02/480p15/partial_movie_files/RootsOfUnity/875235068_3271838321_2430818511.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_02/480p15/partial_movie_files/RootsOfUnity/875235068_1530485953_4064617861.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_02/480p15/partial_movie_files/RootsOfUnity/875235068_3029494611_1494645969.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_02/480p15/partial_movie_files/RootsOfUnity/875235068_4206783946_1840141210.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_02/480p15/partial_movie_files/RootsOfUnity/875235068_3315591202_3455390572.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_02/480p15/partial_movie_files/RootsOfUnity/875235068_2583566142_778618438.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_02/480p15/partial_movie_files/RootsOfUnity/875235068_1714965767_3770438792.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_02/480p15/partial_movie_files/RootsOfUnity/875235068_2574473371_3294908029.webm'

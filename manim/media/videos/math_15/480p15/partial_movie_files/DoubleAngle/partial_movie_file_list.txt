@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/DoubleAngle/2340480722_2637828868_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/DoubleAngle/875235068_371240515_1454465791.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/DoubleAngle/875235068_1038554841_669162630.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/DoubleAngle/875235068_1760172590_2886609300.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/DoubleAngle/875235068_3221468412_4158005008.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/DoubleAngle/875235068_322177040_558379005.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/DoubleAngle/875235068_3744558083_3562518753.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/DoubleAngle/875235068_3508134798_1000997971.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_15/480p15/partial_movie_files/DoubleAngle/875235068_1432596116_281951849.webm'

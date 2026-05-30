@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_04/480p15/partial_movie_files/GibbsEnergy/2340480722_237651905_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_04/480p15/partial_movie_files/GibbsEnergy/875235068_2286978392_796277882.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_04/480p15/partial_movie_files/GibbsEnergy/875235068_1401873077_249556961.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_04/480p15/partial_movie_files/GibbsEnergy/875235068_808786132_3415930206.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_04/480p15/partial_movie_files/GibbsEnergy/875235068_990562804_3506823329.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_04/480p15/partial_movie_files/GibbsEnergy/875235068_3928582056_3539949531.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_04/480p15/partial_movie_files/GibbsEnergy/875235068_232209982_1562319759.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_04/480p15/partial_movie_files/GibbsEnergy/875235068_1143716174_2621780302.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_04/480p15/partial_movie_files/GibbsEnergy/875235068_1432596116_1173894656.webm'

@@ -1,0 +1,11 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/VSEPRGeometry/2340480722_1533461528_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/VSEPRGeometry/875235068_989195131_1154261135.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/VSEPRGeometry/875235068_1705671993_1776248701.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/VSEPRGeometry/875235068_2574473371_2188861212.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/VSEPRGeometry/875235068_3753875735_2053853897.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/VSEPRGeometry/875235068_2574473371_2511839227.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/VSEPRGeometry/875235068_981784469_2734240549.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/VSEPRGeometry/875235068_3971801960_1824311405.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/VSEPRGeometry/875235068_4200444849_3045252101.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/VSEPRGeometry/875235068_1432596116_2641265395.webm'

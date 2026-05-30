@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/Superposition/2340480722_3940551925_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/Superposition/875235068_2513989658_3628060826.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/Superposition/875235068_1217098438_3279448196.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/Superposition/875235068_3160264349_1678361558.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/Superposition/875235068_932746485_220739024.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/Superposition/875235068_1805852586_2507005716.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/Superposition/875235068_3161987964_3002669207.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/Superposition/875235068_3015311350_2670023302.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_09/480p15/partial_movie_files/Superposition/875235068_1432596116_2092546566.webm'

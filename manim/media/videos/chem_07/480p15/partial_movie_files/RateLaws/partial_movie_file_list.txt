@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/RateLaws/2340480722_973456534_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/RateLaws/875235068_3438260589_1123105204.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/RateLaws/875235068_22828960_3525464782.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/RateLaws/875235068_3687443151_4131862458.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/RateLaws/875235068_1414530140_1997988139.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/RateLaws/875235068_2045005838_905320236.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/RateLaws/875235068_369443688_264378372.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/RateLaws/875235068_426776091_1802843587.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/RateLaws/875235068_1432596116_2271986590.webm'

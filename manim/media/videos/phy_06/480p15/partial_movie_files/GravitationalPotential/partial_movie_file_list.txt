@@ -1,0 +1,8 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_06/480p15/partial_movie_files/GravitationalPotential/2340480722_3531778295_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_06/480p15/partial_movie_files/GravitationalPotential/875235068_2472515599_3785256600.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_06/480p15/partial_movie_files/GravitationalPotential/875235068_3691890587_1881430344.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_06/480p15/partial_movie_files/GravitationalPotential/875235068_59655670_3244297880.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_06/480p15/partial_movie_files/GravitationalPotential/875235068_3074328512_3697291571.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_06/480p15/partial_movie_files/GravitationalPotential/875235068_1920609039_2124484796.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_06/480p15/partial_movie_files/GravitationalPotential/875235068_1432596116_2736645277.webm'

@@ -1,0 +1,9 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/DipoleMoment/2340480722_3657314052_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/DipoleMoment/875235068_2484998120_259856580.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/DipoleMoment/875235068_697436657_1614755247.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/DipoleMoment/875235068_1149168537_1015115583.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/DipoleMoment/875235068_1609429181_663429855.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/DipoleMoment/875235068_2220158692_320310652.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/DipoleMoment/875235068_949239077_1637542240.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/DipoleMoment/875235068_1432596116_2924809072.webm'

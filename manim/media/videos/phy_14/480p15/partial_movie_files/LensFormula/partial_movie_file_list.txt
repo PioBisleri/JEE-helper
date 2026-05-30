@@ -1,0 +1,13 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/LensFormula/2340480722_2072865164_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/LensFormula/875235068_4144435043_2010059292.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/LensFormula/875235068_1858545372_108369394.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/LensFormula/875235068_282991785_3670394918.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/LensFormula/875235068_359466906_709212122.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/LensFormula/875235068_2392504003_1088020921.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/LensFormula/875235068_2554591753_4127968754.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/LensFormula/875235068_3755881764_364439269.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/LensFormula/875235068_2719929860_2970623726.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/LensFormula/875235068_555812104_3360525120.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/LensFormula/875235068_682619564_1902445971.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_14/480p15/partial_movie_files/LensFormula/875235068_1432596116_346213873.webm'

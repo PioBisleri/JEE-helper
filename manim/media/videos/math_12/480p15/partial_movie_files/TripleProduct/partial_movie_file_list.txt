@@ -1,0 +1,8 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_12/480p15/partial_movie_files/TripleProduct/2340480722_3912208882_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_12/480p15/partial_movie_files/TripleProduct/875235068_813802605_4096715114.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_12/480p15/partial_movie_files/TripleProduct/875235068_1513877311_4001958957.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_12/480p15/partial_movie_files/TripleProduct/875235068_1314444883_1150151007.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_12/480p15/partial_movie_files/TripleProduct/875235068_119238455_4048191879.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_12/480p15/partial_movie_files/TripleProduct/875235068_2721566750_181034019.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_12/480p15/partial_movie_files/TripleProduct/875235068_1432596116_944410303.webm'

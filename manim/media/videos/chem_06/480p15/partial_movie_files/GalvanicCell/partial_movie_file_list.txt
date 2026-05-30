@@ -1,0 +1,13 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/GalvanicCell/2340480722_4190333095_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/GalvanicCell/875235068_679758555_3592845649.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/GalvanicCell/875235068_851119610_3587807891.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/GalvanicCell/875235068_3786575088_3368802058.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/GalvanicCell/875235068_2352646989_1337901858.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/GalvanicCell/875235068_2178676653_1889744437.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/GalvanicCell/875235068_1883927780_2617645676.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/GalvanicCell/875235068_693160594_2478771160.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/GalvanicCell/875235068_574620665_646046795.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/GalvanicCell/875235068_2729426876_1432208804.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/GalvanicCell/875235068_3174358810_3797859695.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_06/480p15/partial_movie_files/GalvanicCell/875235068_1432596116_3430698939.webm'

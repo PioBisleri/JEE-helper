@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/FirstOrderKinetics/2340480722_240663800_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/FirstOrderKinetics/875235068_3772787619_687875412.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/FirstOrderKinetics/875235068_4024121230_170209959.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/FirstOrderKinetics/875235068_3866538525_3626754691.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/FirstOrderKinetics/875235068_2476440008_401223229.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/FirstOrderKinetics/875235068_1937492441_2872010181.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/FirstOrderKinetics/875235068_3380639735_3927060653.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/FirstOrderKinetics/875235068_1247239860_87454861.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/FirstOrderKinetics/875235068_1432596116_4085362222.webm'

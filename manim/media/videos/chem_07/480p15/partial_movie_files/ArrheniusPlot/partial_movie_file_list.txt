@@ -1,0 +1,11 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/ArrheniusPlot/2340480722_1892024281_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/ArrheniusPlot/875235068_2389854625_2457666590.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/ArrheniusPlot/875235068_4219757293_1263948895.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/ArrheniusPlot/875235068_1938369911_3389091158.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/ArrheniusPlot/875235068_3507333202_163684581.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/ArrheniusPlot/875235068_2046916500_3556524468.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/ArrheniusPlot/875235068_1106632476_3448433410.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/ArrheniusPlot/875235068_3820347900_4196186139.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/ArrheniusPlot/875235068_1511269048_608156007.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_07/480p15/partial_movie_files/ArrheniusPlot/875235068_1432596116_3816387394.webm'

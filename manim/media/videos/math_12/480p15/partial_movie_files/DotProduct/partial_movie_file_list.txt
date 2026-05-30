@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_12/480p15/partial_movie_files/DotProduct/2340480722_2010409246_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_12/480p15/partial_movie_files/DotProduct/875235068_1621385243_1410727218.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_12/480p15/partial_movie_files/DotProduct/875235068_1839963860_1696455939.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_12/480p15/partial_movie_files/DotProduct/875235068_309661539_3652579007.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_12/480p15/partial_movie_files/DotProduct/875235068_2741597554_1270483811.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_12/480p15/partial_movie_files/DotProduct/875235068_1594046183_2964299988.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_12/480p15/partial_movie_files/DotProduct/875235068_2505760410_876341999.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_12/480p15/partial_movie_files/DotProduct/875235068_3482556811_293057841.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_12/480p15/partial_movie_files/DotProduct/875235068_1432596116_3322036390.webm'

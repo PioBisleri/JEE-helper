@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_07/480p15/partial_movie_files/StressStrain/2340480722_1901175707_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_07/480p15/partial_movie_files/StressStrain/875235068_1229177190_3005303658.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_07/480p15/partial_movie_files/StressStrain/875235068_3265872092_2347277185.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_07/480p15/partial_movie_files/StressStrain/875235068_3607003933_1795569782.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_07/480p15/partial_movie_files/StressStrain/875235068_3965128357_2140894597.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_07/480p15/partial_movie_files/StressStrain/875235068_336354474_243662548.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_07/480p15/partial_movie_files/StressStrain/875235068_3259296264_1175656758.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_07/480p15/partial_movie_files/StressStrain/875235068_3598292087_2020711744.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_07/480p15/partial_movie_files/StressStrain/875235068_1432596116_4044918797.webm'

@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/MolecularOrbital/2340480722_1569602330_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/MolecularOrbital/875235068_3580205139_2544274715.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/MolecularOrbital/875235068_3961898189_1051373154.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/MolecularOrbital/875235068_194839136_1969658662.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/MolecularOrbital/875235068_430892681_2701262378.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/MolecularOrbital/875235068_4013300784_1476646570.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/MolecularOrbital/875235068_3388306527_246631681.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/MolecularOrbital/875235068_2603546799_1048583193.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_03/480p15/partial_movie_files/MolecularOrbital/875235068_1432596116_834978413.webm'

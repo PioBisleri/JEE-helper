@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_04/480p15/partial_movie_files/Power/2340480722_1867838832_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_04/480p15/partial_movie_files/Power/875235068_2980988162_1053190695.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_04/480p15/partial_movie_files/Power/875235068_2448966069_1280474412.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_04/480p15/partial_movie_files/Power/875235068_4210515490_2737073147.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_04/480p15/partial_movie_files/Power/875235068_1693227532_1736547442.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_04/480p15/partial_movie_files/Power/875235068_329252626_2754075635.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_04/480p15/partial_movie_files/Power/875235068_116580164_3425507966.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_04/480p15/partial_movie_files/Power/875235068_137469440_1336717486.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/phy_04/480p15/partial_movie_files/Power/875235068_1432596116_3992756567.webm'

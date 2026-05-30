@@ -1,0 +1,13 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/MagneticMoment/2340480722_1445210550_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/MagneticMoment/875235068_3547478602_4113532572.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/MagneticMoment/875235068_3878930730_1459730613.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/MagneticMoment/875235068_3067465436_3515722234.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/MagneticMoment/875235068_1637151934_2602286971.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/MagneticMoment/875235068_3648487476_936396310.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/MagneticMoment/875235068_4268598530_2159488558.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/MagneticMoment/875235068_2289590884_3466519001.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/MagneticMoment/875235068_73034307_3060410268.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/MagneticMoment/875235068_3533197630_3336631908.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/MagneticMoment/875235068_3058386807_4100731585.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/MagneticMoment/875235068_1432596116_1374505715.webm'

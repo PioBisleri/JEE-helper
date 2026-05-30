@@ -1,0 +1,9 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_09/480p15/partial_movie_files/AreaUnderCurve/2340480722_1244537016_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_09/480p15/partial_movie_files/AreaUnderCurve/875235068_4251890537_3945823866.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_09/480p15/partial_movie_files/AreaUnderCurve/875235068_3321049281_598360150.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_09/480p15/partial_movie_files/AreaUnderCurve/875235068_1082563344_21652706.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_09/480p15/partial_movie_files/AreaUnderCurve/875235068_4036517936_3467555260.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_09/480p15/partial_movie_files/AreaUnderCurve/875235068_3250343687_4203089464.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_09/480p15/partial_movie_files/AreaUnderCurve/875235068_709671304_1555296984.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/math_09/480p15/partial_movie_files/AreaUnderCurve/875235068_1432596116_2552947294.webm'

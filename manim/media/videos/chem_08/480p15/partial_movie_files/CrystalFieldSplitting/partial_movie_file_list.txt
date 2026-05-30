@@ -1,0 +1,12 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/CrystalFieldSplitting/2340480722_680712517_223132457.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/CrystalFieldSplitting/875235068_2111408077_1371144737.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/CrystalFieldSplitting/875235068_2069415174_894203681.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/CrystalFieldSplitting/875235068_3859935295_164055481.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/CrystalFieldSplitting/875235068_406968726_884842624.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/CrystalFieldSplitting/875235068_2719460514_1525593922.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/CrystalFieldSplitting/875235068_912801032_925275772.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/CrystalFieldSplitting/875235068_742992439_4147518044.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/CrystalFieldSplitting/875235068_948336589_3979388573.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/CrystalFieldSplitting/875235068_3143550579_2994034579.webm'
+file 'file:/home/veer/Projects/jeeforge/manim/media/videos/chem_08/480p15/partial_movie_files/CrystalFieldSplitting/875235068_1432596116_3381340443.webm'
