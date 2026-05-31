@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../components/UserContext';
 import { storage } from '../utils/storage';
@@ -6,13 +6,13 @@ import { CHAPTERS } from '../data/chapters';
 import { getDueReviews } from '../utils/spaceRepetition';
 import DailyChallenge from '../components/DailyChallenge';
 import { motion, AnimatePresence } from 'framer-motion';
-import { WarningIcon, RefreshIcon, NoteIcon, LockIcon, CheckIcon, CrossIcon } from '../components/Icons';
+import { WarningIcon, RefreshIcon, NoteIcon, LockIcon, CheckIcon } from '../components/Icons';
 import { generateGateQuestions } from '../utils/api';
 import { parseLaTeX } from '../components/DailyChallenge';
 
 export default function Home() {
   const navigate = useNavigate();
-  const { streak, examDate, name, achievements, gainXP, checkProgressionXP } = useUser();
+  const { streak, examDate, gainXP, checkProgressionXP } = useUser();
   const [activeTab, setActiveTab] = useState('physics');
   const [gateChapter, setGateChapter] = useState(null);
   const [gateLoading, setGateLoading] = useState(false);
@@ -23,16 +23,12 @@ export default function Home() {
   const [gateConfirmed, setGateConfirmed] = useState(false);
   const [gateError, setGateError] = useState(null);
   const [gateCompleted, setGateCompleted] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
-  const initials = useMemo(() => {
-    if (!name) return 'A';
-    return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
-  }, [name]);
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const examCountdown = useMemo(() => {
     if (!examDate) return { days: 0, color: 'var(--success)' };
@@ -54,21 +50,16 @@ export default function Home() {
     sessions.forEach(s => {
       if (!s.date) return;
       const sDate = new Date(s.date);
-      if (sDate >= startOfWeek) {
-        thisWeekQuestions += s.attempted || 0;
-      }
+      if (sDate >= startOfWeek) thisWeekQuestions += s.attempted || 0;
       correctQuestions += s.solvedClean || 0;
       attemptedQuestions += s.attempted || 0;
     });
 
-    const accuracy = attemptedQuestions > 0 ? Math.round((correctQuestions / attemptedQuestions) * 100) : 80;
-
+    const accuracy = attemptedQuestions > 0 ? Math.round((correctQuestions / attemptedQuestions) * 100) : 0;
     return { thisWeekQuestions, accuracy };
   }, []);
 
-  const conceptsLearnedCount = useMemo(() => {
-    return storage.getConceptsLearned().length;
-  }, []);
+  const conceptsLearnedCount = useMemo(() => storage.getConceptsLearned().length, []);
 
   const alerts = useMemo(() => {
     const dueReviews = getDueReviews().length;
@@ -77,7 +68,6 @@ export default function Home() {
     const isPast6 = new Date().getHours() >= 18;
     const streakAtRisk = !studiedToday && isPast6 && streak.current > 0;
     const weeklyTestReady = conceptsLearnedCount >= 3;
-
     return { dueReviews, streakAtRisk, weeklyTestReady };
   }, [streak, conceptsLearnedCount]);
 
@@ -99,10 +89,7 @@ export default function Home() {
         const prevUnlocked = prevProg.conceptsUnlocked?.length || 0;
         const prevPercent = prevTotal > 0 ? (prevUnlocked / prevTotal) * 100 : 0;
         const unlockedViaGate = storage.isChapterUnlockedViaGate(chapter.id);
-
-        if (prevPercent < 25 && !unlockedViaGate) {
-          isLocked = true;
-        }
+        if (prevPercent < 25 && !unlockedViaGate) isLocked = true;
       }
 
       if (percent >= 100 && !chapterProg.completed) {
@@ -115,12 +102,8 @@ export default function Home() {
       else if (idx >= third) diff = 'Intermediate';
 
       return {
-        ...chapter,
-        percent,
-        isLocked,
-        diff,
-        conceptsLearned: unlockedCount,
-        prevChapterName,
+        ...chapter, percent, isLocked, diff,
+        conceptsLearned: unlockedCount, prevChapterName,
         completed: chapterProg.completed || percent >= 100,
         unlockedViaGate: storage.isChapterUnlockedViaGate(chapter.id)
       };
@@ -128,10 +111,7 @@ export default function Home() {
   }, [activeTab]);
 
   const handleChapterClick = (chapter) => {
-    if (chapter.isLocked) {
-      showToast('Master at least 25% of the previous chapter to unlock!', 'warning');
-      return;
-    }
+    if (chapter.isLocked) return;
     navigate(`/study/${activeTab}/${chapter.id}`);
   };
 
@@ -148,23 +128,15 @@ export default function Home() {
 
     const list = CHAPTERS[activeTab] || [];
     const idx = list.findIndex(c => c.id === chapter.id);
-    if (idx <= 0) {
-      setGateError("Prerequisite chapter not found.");
-      setGateLoading(false);
-      return;
-    }
+    if (idx <= 0) { setGateError("Prerequisite chapter not found."); setGateLoading(false); return; }
     const prevChapter = list[idx - 1];
 
     try {
       const q = await generateGateQuestions(prevChapter.name, chapter.name);
-      if (q && q.questions && q.questions.length === 5) {
-        setGateQuestions(q.questions);
-      } else {
-        throw new Error("Invalid question format returned.");
-      }
-    } catch (e) {
-      console.error(e);
-      setGateError("Failed to generate prerequisite questions. Please check connection and try again.");
+      if (q && q.questions && q.questions.length === 5) setGateQuestions(q.questions);
+      else throw new Error("Invalid question format.");
+    } catch {
+      setGateError("Failed to generate prerequisite questions. Please try again.");
     } finally {
       setGateLoading(false);
     }
@@ -173,10 +145,7 @@ export default function Home() {
   const handleConfirmGateAnswer = () => {
     if (!gateSelectedOption || gateConfirmed) return;
     const currentQ = gateQuestions[gateCurrentIdx];
-    const isCorrect = gateSelectedOption === currentQ.answer;
-    if (isCorrect) {
-      setGateCorrectCount(prev => prev + 1);
-    }
+    if (gateSelectedOption === currentQ.answer) setGateCorrectCount(prev => prev + 1);
     setGateConfirmed(true);
   };
 
@@ -189,19 +158,13 @@ export default function Home() {
       const isSuccessful = gateCorrectCount === 5;
       const attempts = storage.getGateAttempts();
       const updatedAttempts = attempts.filter(a => a.chapterId !== gateChapter.id);
-      updatedAttempts.push({
-        chapterId: gateChapter.id,
-        date: new Date().toISOString(),
-        score: gateCorrectCount,
-        unlocked: isSuccessful
-      });
+      updatedAttempts.push({ chapterId: gateChapter.id, date: new Date().toISOString(), score: gateCorrectCount, unlocked: isSuccessful });
       storage.setGateAttempts(updatedAttempts);
 
       if (isSuccessful) {
         gainXP(75);
         checkProgressionXP(gateChapter.id);
       }
-
       setGateCompleted(true);
     } else {
       setGateCurrentIdx(nextIdx);
@@ -213,412 +176,281 @@ export default function Home() {
     const lastAttempt = attempts.find(a => a.chapterId === chapterId);
     if (!lastAttempt) return true;
     if (lastAttempt.unlocked) return false;
-    const diff = Date.now() - new Date(lastAttempt.date).getTime();
-    return diff >= 24 * 60 * 60 * 1000;
+    return (now - new Date(lastAttempt.date).getTime()) >= 24 * 60 * 60 * 1000;
   };
 
   const getGateCooldownHours = (chapterId) => {
     const attempts = storage.getGateAttempts();
     const lastAttempt = attempts.find(a => a.chapterId === chapterId);
     if (!lastAttempt) return 0;
-    const diff = Date.now() - new Date(lastAttempt.date).getTime();
-    const remaining = 24 * 60 * 60 * 1000 - diff;
+    const remaining = 24 * 60 * 60 * 1000 - (now - new Date(lastAttempt.date).getTime());
     return Math.max(1, Math.ceil(remaining / (1000 * 60 * 60)));
   };
 
+  const subjectColors = { physics: '#3b82f6', chemistry: '#10b981', math: '#f59e0b' };
+
   return (
-    <div style={styles.page}>
-      <div className="mx-auto p-6 max-w-5xl" style={styles.content}>
+    <div style={{ minHeight: '100vh', paddingBottom: '32px' }}>
+      <div className="mx-auto px-4 max-w-5xl" style={{ paddingTop: '64px' }}>
 
-        {/* Hero Stats Row */}
-        <div style={styles.statsRow}>
-          <div style={styles.statCard} className="card">
-            <span style={styles.statLabel}>Days to Exam</span>
-            <span style={{ ...styles.statNum, color: examCountdown.color }}>
-              {examCountdown.days}
-            </span>
-            <span style={styles.statSubText}>Target Exam Date</span>
+        {/* Hero Stats Banner */}
+        <div style={styles.heroBanner} className="card">
+          <div style={styles.heroStat}>
+            <span style={styles.heroLabel}>Exam in</span>
+            <span style={{ ...styles.heroValue, color: examCountdown.color }}>{examCountdown.days}<span style={styles.heroUnit}>d</span></span>
           </div>
-
-          <div style={styles.statCard} className="card">
-            <span style={styles.statLabel}>Concepts Mastered</span>
-            <span style={styles.statNum}>{conceptsLearnedCount}</span>
-            <span style={styles.statSubText}>Active memory retention</span>
+          <div style={styles.heroDivider} />
+          <div style={styles.heroStat}>
+            <span style={styles.heroLabel}>Streak</span>
+            <span style={{ ...styles.heroValue, color: 'var(--warning)' }}>{streak.current || 0}<span style={styles.heroUnit}>d</span></span>
           </div>
-
-          <div style={styles.statCard} className="card">
-            <span style={styles.statLabel}>Weekly Solves</span>
-            <span style={styles.statNum}>{stats.thisWeekQuestions}</span>
-            <span style={styles.statSubText}>Solved questions this week</span>
+          <div style={styles.heroDivider} />
+          <div style={styles.heroStat}>
+            <span style={styles.heroLabel}>Concepts</span>
+            <span style={styles.heroValue}>{conceptsLearnedCount}</span>
           </div>
-
-          <div style={styles.statCard} className="card">
-            <span style={styles.statLabel}>Weekly Accuracy</span>
-            <span style={styles.statNum}>{stats.accuracy}%</span>
-            <span style={styles.statSubText}>Correct choice ratios</span>
+          <div style={styles.heroDivider} />
+          <div style={styles.heroStat}>
+            <span style={styles.heroLabel}>This week</span>
+            <span style={styles.heroValue}>{stats.thisWeekQuestions}<span style={styles.heroUnit}>q</span></span>
           </div>
-        </div>
-
-        {/* Alerts Section */}
-        <div style={styles.alertsContainer}>
-          {alerts.streakAtRisk && (
-            <div style={{ ...styles.alertCard, borderLeft: '3px solid var(--danger)', backgroundColor: 'rgba(239, 68, 68, 0.06)' }} className="card">
-              <span style={{ display: 'flex', alignItems: 'center' }}>
-                <WarningIcon size={16} color="var(--danger)" style={{ marginRight: '6px' }} />
-                <span><strong>Streak at Risk!</strong> You haven't practiced today and it is past 6:00 PM.</span>
-              </span>
-              <button className="btn btn-secondary" style={styles.alertBtnSec} onClick={() => navigate(`/study?subject=${activeTab}`)}>
-                Study Now
-              </button>
-            </div>
-          )}
-
-          {alerts.dueReviews > 0 && (
-            <div style={{ ...styles.alertCard, borderLeft: '3px solid var(--warning)', backgroundColor: 'rgba(245, 158, 11, 0.06)' }} className="card">
-              <span style={{ display: 'flex', alignItems: 'center' }}>
-                <RefreshIcon size={16} color="var(--warning)" style={{ marginRight: '6px' }} />
-                <span><strong>Spaced Reviews Due:</strong> {alerts.dueReviews} concept{alerts.dueReviews > 1 ? 's are' : ' is'} due for active recall training.</span>
-              </span>
-              <button className="btn btn-secondary" style={styles.alertBtnSec} onClick={() => navigate('/study?mode=review')}>
-                Start Reviews
-              </button>
-            </div>
-          )}
-
-          {alerts.weeklyTestReady && (
-            <div style={{ ...styles.alertCard, borderLeft: '3px solid var(--accent)', backgroundColor: 'rgba(99, 102, 241, 0.06)' }} className="card">
-              <span style={{ display: 'flex', alignItems: 'center' }}>
-                <NoteIcon size={16} color="var(--accent)" style={{ marginRight: '6px' }} />
-                <span><strong>Weekly Test Ready:</strong> Test your understanding across all concepts studied this week.</span>
-              </span>
-              <button className="btn btn-primary" style={styles.alertBtn} onClick={() => navigate('/test')}>
-                Start Test
-              </button>
-            </div>
+          {stats.accuracy > 0 && (
+            <>
+              <div style={styles.heroDivider} />
+              <div style={styles.heroStat}>
+                <span style={styles.heroLabel}>Accuracy</span>
+                <span style={{ ...styles.heroValue, color: stats.accuracy >= 70 ? 'var(--success)' : 'var(--warning)' }}>{stats.accuracy}%</span>
+              </div>
+            </>
           )}
         </div>
 
-        {/* Daily Challenge Card */}
-        <DailyChallenge />
-
-        {/* Subject Tabs */}
-        <div style={styles.tabsRow}>
-          <div style={styles.tabsContainer}>
-            {['physics', 'chemistry', 'math'].map((sub) => {
-              const isActive = activeTab === sub;
-              return (
-                <button
-                  key={sub}
-                  style={styles.tabBtn}
-                  onClick={() => setActiveTab(sub)}
-                >
-                  <span style={{
-                    ...styles.tabText,
-                    color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)'
-                  }}>
-                    {sub.toUpperCase()}
-                  </span>
-                  {isActive && (
-                    <motion.div
-                      layoutId="slidingUnderline"
-                      style={styles.slidingUnderline}
-                    />
-                  )}
-                </button>
-              );
-            })}
+        {/* Alerts */}
+        {(alerts.streakAtRisk || alerts.dueReviews > 0 || alerts.weeklyTestReady) && (
+          <div style={{ marginBottom: '32px' }}>
+            {alerts.streakAtRisk && (
+              <div style={{ ...styles.alert, borderLeft: '2px solid var(--danger)' }}>
+                <WarningIcon size={14} color="var(--danger)" />
+                <span style={styles.alertText}><strong>Streak at risk.</strong> Practice today to keep it alive.</span>
+                <button className="btn btn-secondary" style={styles.alertBtn} onClick={() => navigate('/study?subject=physics')}>Study</button>
+              </div>
+            )}
+            {alerts.dueReviews > 0 && (
+              <div style={{ ...styles.alert, borderLeft: '2px solid var(--warning)' }}>
+                <RefreshIcon size={14} color="var(--warning)" />
+                <span style={styles.alertText}><strong>{alerts.dueReviews} reviews due.</strong> Active recall keeps memories strong.</span>
+                <button className="btn btn-secondary" style={styles.alertBtn} onClick={() => navigate('/study?mode=review')}>Review</button>
+              </div>
+            )}
+            {alerts.weeklyTestReady && (
+              <div style={{ ...styles.alert, borderLeft: '2px solid var(--accent)' }}>
+                <NoteIcon size={14} color="var(--accent)" />
+                <span style={styles.alertText}><strong>Weekly test ready.</strong> Test your understanding across concepts.</span>
+                <button className="btn btn-primary" style={styles.alertBtn} onClick={() => navigate('/test')}>Start</button>
+              </div>
+            )}
           </div>
+        )}
+
+        {/* Daily Challenge */}
+        <div style={{ marginBottom: '32px' }}>
+          <DailyChallenge />
+        </div>
+
+        {/* Subject Tabs — Segmented Control */}
+        <div style={styles.segmentedControl}>
+          {['physics', 'chemistry', 'math'].map((sub) => (
+            <button
+              key={sub}
+              style={{
+                ...styles.segmentBtn,
+                backgroundColor: activeTab === sub ? 'var(--accent)' : 'transparent',
+                color: activeTab === sub ? '#fff' : 'var(--text-secondary)',
+              }}
+              onClick={() => setActiveTab(sub)}
+            >
+              {sub.charAt(0).toUpperCase() + sub.slice(1)}
+            </button>
+          ))}
         </div>
 
         {/* Chapter Grid */}
-        <div style={styles.chaptersGrid}>
-          {subjectChapters.map((chapter, index) => {
-            const subjectColor = getSubjectColor(activeTab);
-
-            return (
-              <motion.div
-                key={chapter.id}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.04 }}
-                style={{
-                  ...styles.chapterCard,
-                  ...(chapter.isLocked ? styles.lockedCard : {})
-                }}
-                className="card"
-                onClick={() => handleChapterClick(chapter)}
-              >
-                <div style={styles.chapterCardHeader}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={styles.chapterNumber}>Chapter {index + 1}</span>
-                    {chapter.unlockedViaGate && (
-                      <span style={{
-                        ...styles.difficultyBadge,
-                        color: '#f59e0b',
-                        backgroundColor: 'rgba(245, 158, 11, 0.15)',
-                        fontSize: '9px',
-                        fontWeight: '700',
-                        padding: '1px 6px'
-                      }}>
-                        Gate Unlocked
-                      </span>
-                    )}
-                  </div>
-                  {chapter.completed ? (
-                    <span style={{
-                      ...styles.difficultyBadge,
-                      color: 'var(--success)',
-                      backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '10px',
-                      fontWeight: '700'
-                    }}>
-                      <span>Completed</span>
-                    </span>
-                  ) : (
-                    <span style={{
-                      ...styles.difficultyBadge,
-                      color: getDifficultyColor(chapter.diff),
-                      backgroundColor: `${getDifficultyColor(chapter.diff)}22`
-                    }}>
-                      {chapter.diff}
-                    </span>
-                  )}
-                </div>
-
-                <h4 style={styles.chapterTitle}>{chapter.name}</h4>
-
-                <div style={styles.chapterProgressRow}>
-                  <div style={styles.progressRingWrapper}>
-                    <svg width="40" height="40" viewBox="0 0 36 36">
-                      <path
-                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                        fill="none"
-                        stroke="var(--bg-elevated)"
-                        strokeWidth="2.5"
-                      />
-                      <motion.path
-                        initial={{ strokeDasharray: '0, 100' }}
-                        animate={{ strokeDasharray: `${chapter.percent}, 100` }}
-                        transition={{ duration: 0.8, delay: index * 0.05 }}
-                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                        fill="none"
-                        stroke={subjectColor}
-                        strokeWidth="2.5"
-                        strokeDasharray={`${chapter.percent}, 100`}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <span style={styles.progressRingText}>{chapter.percent}%</span>
-                  </div>
-
-                  <div style={styles.progressTextCol}>
-                    <span style={styles.conceptsUnlockedText}>
-                      {chapter.conceptsLearned} concepts mastered
-                    </span>
-                    <span style={styles.subtopicsCountText}>
-                      {chapter.subtopics?.length || 0} subtopics
-                    </span>
-                  </div>
-                </div>
-
-                <div style={{ marginTop: '8px', width: '100%' }}>
-                  <div style={styles.horizontalProgressBarBg}>
-                    <div
-                      style={{
-                        ...styles.horizontalProgressBarFiller,
-                        width: `${chapter.percent}%`,
-                        backgroundColor: subjectColor
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {chapter.isLocked && (
-                  <div style={styles.lockOverlay} onClick={(e) => e.stopPropagation()}>
-                    <div style={styles.lockContent}>
-                      <div style={styles.lockIconContainer}>
-                        <LockIcon size={18} color="var(--text-secondary)" />
-                      </div>
-                      <span style={styles.lockText}>Unlock at 25% of {chapter.prevChapterName}</span>
-                      {isGateAvailable(chapter.id) ? (
-                        <button
-                          className="btn btn-primary"
-                          style={styles.unlockEarlyBtn}
-                          onClick={() => handleOpenGate(chapter)}
-                        >
-                          Unlock Early
-                        </button>
-                      ) : (
-                        <span style={styles.cooldownText}>Retry Gate in {getGateCooldownHours(chapter.id)}h</span>
-                      )}
-                    </div>
-                  </div>
+        <div style={styles.chapterGrid}>
+          {subjectChapters.map((chapter, index) => (
+            <motion.div
+              key={chapter.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.03, duration: 0.25 }}
+              style={{
+                ...styles.chapterCard,
+                cursor: chapter.isLocked ? 'not-allowed' : 'pointer',
+                opacity: chapter.isLocked ? 0.6 : 1,
+              }}
+              className="card"
+              onClick={() => handleChapterClick(chapter)}
+            >
+              <div style={styles.chapterHeader}>
+                <span style={styles.chapterIndex}>#{index + 1}</span>
+                {chapter.completed ? (
+                  <span style={{ ...styles.statusBadge, color: 'var(--success)', backgroundColor: 'var(--success-dim)' }}>
+                    <CheckIcon size={10} /> Done
+                  </span>
+                ) : chapter.unlockedViaGate ? (
+                  <span style={{ ...styles.statusBadge, color: 'var(--warning)', backgroundColor: 'var(--warning-dim)' }}>Gate</span>
+                ) : (
+                  <span style={{
+                    ...styles.statusBadge,
+                    color: chapter.diff === 'Beginner' ? 'var(--success)' : chapter.diff === 'Intermediate' ? 'var(--warning)' : 'var(--danger)',
+                    backgroundColor: chapter.diff === 'Beginner' ? 'var(--success-dim)' : chapter.diff === 'Intermediate' ? 'var(--warning-dim)' : 'var(--danger-dim)'
+                  }}>
+                    {chapter.diff}
+                  </span>
                 )}
-              </motion.div>
-            );
-          })}
-        </div>
+              </div>
 
+              <h4 style={styles.chapterTitle}>{chapter.name}</h4>
+
+              <div style={styles.progressBar}>
+                <div style={{ ...styles.progressFill, width: `${chapter.percent}%`, backgroundColor: subjectColors[activeTab] }} />
+              </div>
+
+              <div style={styles.chapterMeta}>
+                <span>{chapter.conceptsLearned} concepts</span>
+                <span style={{ fontFamily: 'var(--font-mono)' }}>{chapter.percent}%</span>
+              </div>
+
+              {chapter.isLocked && (
+                    <div style={styles.lockOverlay}>
+                      <div style={styles.lockContent}>
+                        <div style={styles.lockIconCircle}>
+                          <LockIcon size={14} color="var(--text-muted)" />
+                        </div>
+                        <span style={styles.lockTitle}>{chapter.name}</span>
+                        <span style={styles.lockText}>Complete 25% of previous chapter to unlock</span>
+                        {isGateAvailable(chapter.id) ? (
+                          <button style={styles.gateBtn} onClick={(e) => { e.stopPropagation(); handleOpenGate(chapter); }}>Gate Unlock</button>
+                        ) : (
+                          <span style={styles.cooldownText}>Retry in {getGateCooldownHours(chapter.id)}h</span>
+                        )}
+                      </div>
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </div>
       </div>
 
-      {/* Early Chapter Unlock Gate Modal */}
+      {/* Gate Modal */}
       <AnimatePresence>
         {gateChapter && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={gateStyles.backdrop}
+            style={styles.backdrop}
             onClick={() => setGateChapter(null)}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              style={gateStyles.modal}
-              className="glass"
-              onClick={(e) => e.stopPropagation()}
+              exit={{ opacity: 0, scale: 0.95, y: 12 }}
+              style={styles.modal}
+              className="card"
+              onClick={(evt) => evt.stopPropagation()}
             >
-              <div style={gateStyles.modalHeader}>
+              <div style={styles.modalHeader}>
                 <div>
-                  <span style={gateStyles.challengeBadge}>EARLY UNLOCK GATE</span>
-                  <h4 style={{ margin: '4px 0 0 0' }}>Unlock: {gateChapter.name}</h4>
+                  <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--warning)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Early Unlock Gate</span>
+                  <h4 style={{ margin: '2px 0 0', fontSize: '16px' }}>{gateChapter.name}</h4>
                 </div>
-                <button style={gateStyles.closeBtn} onClick={() => setGateChapter(null)}>x</button>
+                <button style={styles.closeBtn} onClick={() => setGateChapter(null)}>×</button>
               </div>
 
-              <div style={gateStyles.modalContent}>
+              <div style={{ padding: '20px 24px' }}>
                 {gateLoading && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '40px 0' }}>
-                    <div className="skeleton" style={{ width: '80px', height: '80px', borderRadius: '50%' }} />
-                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Generating 5 prerequisite questions from previous chapter...</span>
+                  <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                    <div className="skeleton" style={{ width: '48px', height: '48px', borderRadius: '50%', margin: '0 auto 12px' }} />
+                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Generating questions...</span>
                   </div>
                 )}
 
                 {gateError && (
-                  <div style={{ color: 'var(--danger)', textAlign: 'center', padding: '20px 0' }}>
-                    <WarningIcon size={32} color="var(--danger)" style={{ marginBottom: '12px' }} />
-                    <p style={{ fontSize: '14px', fontWeight: 'bold' }}>{gateError}</p>
-                    <button className="btn btn-secondary" style={{ marginTop: '16px' }} onClick={() => setGateChapter(null)}>Close</button>
+                  <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--danger)', marginBottom: '12px' }}>{gateError}</p>
+                    <button className="btn btn-secondary" onClick={() => setGateChapter(null)}>Close</button>
                   </div>
                 )}
 
                 {!gateLoading && !gateError && gateQuestions.length > 0 && !gateCompleted && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                      <span>Question {gateCurrentIdx + 1} of 5</span>
-                      <span>{gateCorrectCount} correct so far</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-muted)' }}>
+                      <span>Q{gateCurrentIdx + 1} of 5</span>
+                      <span>{gateCorrectCount} correct</span>
                     </div>
 
-                    <div style={gateStyles.questionText}>
+                    <div style={{ fontSize: '15px', lineHeight: '1.6', fontWeight: '500' }}>
                       {parseLaTeX(gateQuestions[gateCurrentIdx].question)}
                     </div>
 
-                    <div style={gateStyles.optionsList}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {Object.entries(gateQuestions[gateCurrentIdx].options).map(([key, val]) => {
                         const isSelected = gateSelectedOption === key;
                         const isCorrect = gateQuestions[gateCurrentIdx].answer === key;
-
-                        let optionStyle = { ...gateStyles.optionBtn };
-                        if (isSelected) optionStyle = { ...optionStyle, ...gateStyles.optionSelected };
-                        if (gateConfirmed) {
-                          if (isCorrect) optionStyle = { ...optionStyle, ...gateStyles.optionCorrect };
-                          else if (isSelected) optionStyle = { ...optionStyle, ...gateStyles.optionWrong };
-                        }
+                        let btnStyle = { ...styles.gateOption };
+                        if (isSelected) btnStyle = { ...btnStyle, borderColor: 'var(--accent)', backgroundColor: 'var(--accent-dim)' };
+                        if (gateConfirmed && isCorrect) btnStyle = { ...btnStyle, borderColor: 'var(--success)', backgroundColor: 'var(--success-dim)' };
+                        if (gateConfirmed && isSelected && !isCorrect) btnStyle = { ...btnStyle, borderColor: 'var(--danger)', backgroundColor: 'var(--danger-dim)' };
 
                         return (
-                          <button
-                            key={key}
-                            style={optionStyle}
-                            disabled={gateConfirmed}
-                            onClick={() => setGateSelectedOption(key)}
-                          >
+                          <button key={key} style={btnStyle} disabled={gateConfirmed} onClick={() => setGateSelectedOption(key)}>
                             <span style={{
-                              ...gateStyles.optionBadge,
-                              backgroundColor: isSelected ? 'var(--accent)' : 'var(--bg-elevated)'
+                              width: '24px', height: '24px', borderRadius: '6px',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: '11px', fontWeight: '700', color: '#fff', flexShrink: 0,
+                              backgroundColor: isSelected ? 'var(--accent)' : 'var(--bg-elevated)',
+                              transition: 'background-color 0.15s'
                             }}>{key}</span>
-                            <span style={gateStyles.optionVal}>{parseLaTeX(val)}</span>
+                            <span style={{ fontSize: '13px', flex: 1 }}>{parseLaTeX(val)}</span>
                           </button>
                         );
                       })}
                     </div>
 
                     {gateConfirmed && (
-                      <div style={gateStyles.explanationSection} className="card">
-                        <h5 style={{
-                          color: gateSelectedOption === gateQuestions[gateCurrentIdx].answer ? 'var(--success)' : 'var(--danger)',
-                          marginBottom: '8px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          fontSize: '14px'
-                        }}>
-                          {gateSelectedOption === gateQuestions[gateCurrentIdx].answer ? (
-                            <>
-                              <CheckIcon size={16} />
-                              <span>Correct!</span>
-                            </>
-                          ) : (
-                            <>
-                              <CrossIcon size={16} />
-                              <span>Incorrect</span>
-                            </>
-                          )}
-                        </h5>
-                        <p style={{ fontSize: '13px', color: 'var(--text-primary)', margin: 0 }}>
-                          <strong>Explanation:</strong> {parseLaTeX(gateQuestions[gateCurrentIdx].whyCorrect)}
-                        </p>
+                      <div style={{ padding: '12px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-secondary)', fontSize: '13px', lineHeight: '1.5' }}>
+                        <strong style={{ color: gateSelectedOption === gateQuestions[gateCurrentIdx].answer ? 'var(--success)' : 'var(--danger)' }}>
+                          {gateSelectedOption === gateQuestions[gateCurrentIdx].answer ? 'Correct' : 'Incorrect'}
+                        </strong>
+                        <p style={{ margin: '4px 0 0', color: 'var(--text-secondary)' }}>{parseLaTeX(gateQuestions[gateCurrentIdx].whyCorrect)}</p>
                       </div>
                     )}
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
-                      {!gateConfirmed ? (
-                        <button
-                          className="btn btn-primary w-full"
-                          disabled={!gateSelectedOption}
-                          onClick={handleConfirmGateAnswer}
-                        >
-                          Confirm Answer
-                        </button>
-                      ) : (
-                        <button
-                          className="btn btn-primary w-full"
-                          onClick={handleNextGateQuestion}
-                        >
-                          {gateCurrentIdx >= 4 ? 'Finish challenge' : 'Next Question'}
-                        </button>
-                      )}
-                    </div>
+                    <button
+                      className="btn btn-primary w-full"
+                      disabled={!gateSelectedOption}
+                      onClick={!gateConfirmed ? handleConfirmGateAnswer : handleNextGateQuestion}
+                    >
+                      {!gateConfirmed ? 'Confirm' : gateCurrentIdx >= 4 ? 'Finish' : 'Next'}
+                    </button>
                   </div>
                 )}
 
                 {gateCompleted && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '16px', padding: '20px 0' }}>
+                  <div style={{ textAlign: 'center', padding: '24px 0' }}>
                     {gateCorrectCount === 5 ? (
                       <>
-                        <h2 style={{ color: 'var(--success)', fontSize: '28px', margin: 0 }}>Challenge Cleared!</h2>
-                        <p style={{ fontSize: '14px', color: 'var(--text-primary)' }}>
-                          Perfect score! You got <strong>5/5</strong> correct. <strong>{gateChapter.name}</strong> is now unlocked early!
-                        </p>
-                        <span style={{ color: 'var(--warning)', fontWeight: 'bold' }}>+75 XP Awarded!</span>
+                        <h3 style={{ color: 'var(--success)', marginBottom: '8px' }}>Unlocked!</h3>
+                        <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Perfect score. <strong>{gateChapter.name}</strong> is now available.</p>
+                        <p style={{ color: 'var(--warning)', fontWeight: '700', marginTop: '8px' }}>+75 XP</p>
                       </>
                     ) : (
                       <>
-                        <h2 style={{ color: 'var(--danger)', fontSize: '24px', margin: 0 }}>Almost there!</h2>
-                        <p style={{ fontSize: '14px', color: 'var(--text-primary)' }}>
-                          You got <strong>{gateCorrectCount}/5</strong> correct. You must answer all 5 correctly to unlock early.
-                        </p>
-                        <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                          Review the previous chapter and try again in 24 hours.
-                        </p>
+                        <h3 style={{ color: 'var(--danger)', marginBottom: '8px' }}>{gateCorrectCount}/5 — Not enough</h3>
+                        <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>All 5 correct required. Try again in 24 hours.</p>
                       </>
                     )}
-                    <button className="btn btn-primary" style={{ minWidth: '120px', marginTop: '12px' }} onClick={() => setGateChapter(null)}>
-                      Close Gate
-                    </button>
+                    <button className="btn btn-primary" style={{ marginTop: '16px' }} onClick={() => setGateChapter(null)}>Close</button>
                   </div>
                 )}
               </div>
@@ -630,373 +462,254 @@ export default function Home() {
   );
 }
 
-function getSubjectColor(subject) {
-  if (subject === 'physics') return '#3b82f6';
-  if (subject === 'chemistry') return '#10b981';
-  return '#f59e0b';
-}
-
-function getDifficultyColor(diff) {
-  if (diff === 'Beginner') return 'var(--success)';
-  if (diff === 'Intermediate') return 'var(--warning)';
-  return 'var(--danger)';
-}
-
 const styles = {
-  page: {
-    minHeight: '100vh',
-    backgroundColor: 'var(--bg-primary)',
-    position: 'relative'
-  },
-  content: {
-    paddingTop: '88px',
-    paddingBottom: '32px'
-  },
-  statsRow: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-    gap: '16px',
+  heroBanner: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0',
+    padding: '20px 24px',
     marginBottom: '24px',
-    overflowX: 'auto',
-    whiteSpace: 'nowrap'
+    flexWrap: 'wrap',
   },
-  statCard: {
-    backgroundColor: 'rgba(6, 10, 20, 0.5)',
-    borderRadius: '12px',
-    padding: '20px',
-    border: '1px solid var(--border-subtle)',
+  heroStat: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
-    transition: 'all 0.25s ease'
+    alignItems: 'center',
+    gap: '2px',
+    padding: '0 20px',
+    flex: '1 1 auto',
+    minWidth: '80px',
   },
-  statLabel: {
+  heroLabel: {
+    fontSize: '10px',
+    fontWeight: '600',
+    color: 'var(--text-muted)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  },
+  heroValue: {
+    fontSize: '24px',
+    fontWeight: '800',
+    fontFamily: 'var(--font-mono)',
+    color: 'var(--text-primary)',
+    lineHeight: '1.1',
+  },
+  heroUnit: {
+    fontSize: '12px',
+    fontWeight: '600',
+    color: 'var(--text-muted)',
+    marginLeft: '1px',
+  },
+  heroDivider: {
+    width: '1px',
+    height: '32px',
+    backgroundColor: 'var(--border-subtle)',
+    flexShrink: 0,
+  },
+  alert: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '12px 16px',
+    backgroundColor: 'var(--bg-card)',
+    borderRadius: 'var(--radius-md)',
+    marginBottom: '8px',
+    border: '1px solid var(--border-subtle)',
+  },
+  alertText: {
+    fontSize: '13px',
+    color: 'var(--text-secondary)',
+    flex: 1,
+  },
+  alertBtn: {
+    padding: '5px 12px',
     fontSize: '11px',
     fontWeight: '600',
-    color: 'var(--text-secondary)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px'
+    flexShrink: 0,
   },
-  statNum: {
-    fontSize: '20px',
-    fontWeight: '700',
-    fontFamily: 'var(--font-mono)',
-    color: 'var(--text-primary)'
+  segmentedControl: {
+    display: 'flex',
+    backgroundColor: 'var(--bg-secondary)',
+    borderRadius: 'var(--radius-md)',
+    padding: '3px',
+    marginBottom: '24px',
+    border: '1px solid var(--border-subtle)',
   },
-  statSubText: {
-    fontSize: '11px',
-    color: 'var(--text-muted)'
+  segmentBtn: {
+    flex: 1,
+    padding: '8px 16px',
+    borderRadius: 'var(--radius-sm)',
+    border: 'none',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
   },
-  alertsContainer: {
+  chapterGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+    gap: '12px',
+  },
+  chapterCard: {
+    padding: '16px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
-    marginBottom: '24px'
+    gap: '10px',
+    transition: 'transform 0.15s ease, box-shadow 0.15s ease',
   },
-  alertCard: {
+  chapterHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '16px 20px !important',
-    fontSize: '13px',
-    flexWrap: 'wrap',
-    gap: '12px'
   },
-  alertBtn: {
-    padding: '6px 14px',
-    fontSize: '12px'
-  },
-  alertBtnSec: {
-    padding: '6px 14px',
-    fontSize: '12px',
-    borderColor: 'var(--warning)',
-    color: 'var(--warning)',
-    backgroundColor: 'transparent'
-  },
-  tabsRow: {
-    borderBottom: '1px solid var(--border-subtle)',
-    marginBottom: '24px'
-  },
-  tabsContainer: {
-    display: 'flex',
-    gap: '32px'
-  },
-  tabBtn: {
-    position: 'relative',
-    padding: '10px 20px',
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease'
-  },
-  tabText: {
-    fontSize: '14px',
-    fontWeight: '700',
-    letterSpacing: '0.5px'
-  },
-  slidingUnderline: {
-    position: 'absolute',
-    bottom: '0',
-    left: '10%',
-    right: '10%',
-    height: '2px',
-    background: 'var(--accent)',
-    borderRadius: '2px 2px 0 0'
-  },
-  chaptersGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '20px'
-  },
-  chapterCard: {
-    cursor: 'pointer',
-    padding: '20px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-    minHeight: '160px',
-    position: 'relative',
-    overflow: 'hidden'
-  },
-  chapterCardHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  chapterNumber: {
+  chapterIndex: {
     fontSize: '11px',
-    color: 'var(--text-secondary)',
+    fontFamily: 'var(--font-mono)',
     fontWeight: '600',
-    fontFamily: 'var(--font-mono)'
+    color: 'var(--text-muted)',
   },
-  difficultyBadge: {
+  statusBadge: {
     fontSize: '10px',
     fontWeight: '700',
     padding: '2px 8px',
-    borderRadius: '6px'
+    borderRadius: 'var(--radius-sm)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '3px',
   },
   chapterTitle: {
-    fontSize: '16px',
+    fontSize: '15px',
     fontWeight: '700',
-    lineHeight: '1.4',
-    margin: 0
+    margin: 0,
+    lineHeight: '1.3',
   },
-  chapterProgressRow: {
+  progressBar: {
+    width: '100%',
+    height: '3px',
+    backgroundColor: 'var(--bg-elevated)',
+    borderRadius: '2px',
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: '2px',
+    transition: 'width 0.5s ease-out',
+  },
+  chapterMeta: {
     display: 'flex',
-    alignItems: 'center',
-    gap: '16px'
-  },
-  progressRingWrapper: {
-    position: 'relative',
-    width: '40px',
-    height: '40px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0
-  },
-  progressRingText: {
-    position: 'absolute',
-    fontSize: '9px',
-    fontWeight: '700',
-    fontFamily: 'var(--font-mono)'
-  },
-  progressTextCol: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px'
-  },
-  conceptsUnlockedText: {
-    fontSize: '12px',
-    fontWeight: '600',
-    color: 'var(--text-primary)'
-  },
-  subtopicsCountText: {
+    justifyContent: 'space-between',
     fontSize: '11px',
-    color: 'var(--text-muted)'
-  },
-  lockedCard: {
-    cursor: 'not-allowed'
+    color: 'var(--text-muted)',
+    fontWeight: '500',
   },
   lockOverlay: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(8, 11, 20, 0.7)',
-    borderRadius: '12px',
+    inset: '4px',
+    backgroundColor: '#0c0c10',
+    borderRadius: 'calc(var(--radius-lg) - 2px)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 10
-  },
-  lockIconContainer: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: '4px'
+    zIndex: 5,
+    border: '1px solid var(--border-subtle)',
   },
   lockContent: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '8px',
+    justifyContent: 'center',
+    gap: '6px',
     textAlign: 'center',
-    padding: '12px'
+    padding: '8px 12px',
+    width: '100%',
+    height: '100%',
+  },
+  lockIconCircle: {
+    width: '28px',
+    height: '28px',
+    borderRadius: '50%',
+    backgroundColor: 'var(--bg-elevated)',
+    border: '1px solid var(--border-default)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lockTitle: {
+    fontSize: '12px',
+    fontWeight: '700',
+    color: 'var(--text-primary)',
+    lineHeight: '1.2',
   },
   lockText: {
-    fontSize: '11px',
-    fontWeight: '600',
-    color: 'var(--text-secondary)'
+    fontSize: '9px',
+    fontWeight: '500',
+    color: 'var(--text-muted)',
+    lineHeight: '1.3',
+    maxWidth: '180px',
   },
-  unlockEarlyBtn: {
-    padding: '6px 12px',
-    fontSize: '11px',
+  gateBtn: {
+    padding: '4px 10px',
+    fontSize: '9px',
     fontWeight: '700',
-    borderRadius: '8px',
-    marginTop: '4px',
-    cursor: 'pointer',
+    borderRadius: 'var(--radius-sm)',
+    border: 'none',
     backgroundColor: 'var(--accent)',
-    color: '#030508',
-    border: 'none'
+    color: '#fff',
+    cursor: 'pointer',
   },
   cooldownText: {
-    fontSize: '10px',
+    fontSize: '8px',
     color: 'var(--text-muted)',
     fontWeight: '600',
     backgroundColor: 'var(--bg-elevated)',
-    padding: '4px 8px',
-    borderRadius: '8px'
+    padding: '2px 6px',
+    borderRadius: 'var(--radius-sm)',
   },
-  horizontalProgressBarBg: {
-    width: '100%',
-    height: '4px',
-    backgroundColor: 'var(--bg-elevated)',
-    borderRadius: '2px',
-    overflow: 'hidden'
-  },
-  horizontalProgressBarFiller: {
-    height: '100%',
-    borderRadius: '2px',
-    transition: 'width 0.5s ease-out'
-  }
-};
-
-const gateStyles = {
   backdrop: {
     position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100vw',
-    height: '100vh',
-    backgroundColor: 'rgba(8, 11, 20, 0.75)',
+    inset: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     zIndex: 1000,
-    backdropFilter: 'blur(8px)',
+    backdropFilter: 'blur(4px)',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   modal: {
-    zIndex: 1001,
     width: '90%',
-    maxWidth: '500px',
-    maxHeight: '90vh',
+    maxWidth: '440px',
+    maxHeight: '85vh',
     overflowY: 'auto',
-    borderRadius: '16px',
-    display: 'flex',
-    flexDirection: 'column',
-    boxShadow: '0 10px 15px -3px rgba(0,0,0,0.4)',
-    border: '1px solid var(--border-subtle)',
-    position: 'relative'
+    borderRadius: 'var(--radius-xl)',
   },
   modalHeader: {
-    padding: '20px 24px',
+    padding: '16px 20px',
     borderBottom: '1px solid var(--border-subtle)',
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  challengeBadge: {
-    color: 'var(--warning)',
-    fontSize: '11px',
-    fontWeight: '700',
-    letterSpacing: '1px'
+    alignItems: 'center',
   },
   closeBtn: {
     background: 'none',
     border: 'none',
-    color: 'var(--text-secondary)',
+    color: 'var(--text-muted)',
     fontSize: '18px',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    lineHeight: 1,
   },
-  modalContent: {
-    padding: '24px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-    overflowY: 'auto'
-  },
-  questionText: {
-    fontFamily: 'var(--font-sans)',
-    fontSize: '15px',
-    lineHeight: '1.6',
-    fontWeight: '500',
-    color: 'var(--text-primary)'
-  },
-  optionsList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px'
-  },
-  optionBtn: {
+  gateOption: {
     display: 'flex',
     alignItems: 'center',
+    gap: '10px',
     width: '100%',
-    padding: '10px 14px',
-    borderRadius: '10px',
+    padding: '10px 12px',
+    borderRadius: 'var(--radius-md)',
     border: '1px solid var(--border-default)',
     backgroundColor: 'transparent',
     color: 'var(--text-primary)',
     textAlign: 'left',
     cursor: 'pointer',
-    transition: 'all 0.15s'
+    transition: 'all 0.15s',
   },
-  optionSelected: {
-    borderColor: 'var(--accent)',
-    backgroundColor: 'rgba(99, 102, 241, 0.08)'
-  },
-  optionCorrect: {
-    borderColor: 'var(--success)',
-    backgroundColor: 'rgba(16, 185, 129, 0.08)'
-  },
-  optionWrong: {
-    borderColor: 'var(--danger)',
-    backgroundColor: 'rgba(239, 68, 68, 0.08)'
-  },
-  optionBadge: {
-    width: '26px',
-    height: '26px',
-    borderRadius: '6px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontWeight: '700',
-    marginRight: '12px',
-    fontSize: '11px',
-    color: '#ffffff'
-  },
-  optionVal: {
-    fontSize: '13px',
-    fontWeight: '400',
-    flex: 1
-  },
-  explanationSection: {
-    padding: '12px !important',
-    backgroundColor: 'var(--bg-secondary)',
-    marginTop: '8px'
-  }
 };

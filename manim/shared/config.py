@@ -1,4 +1,4 @@
-# JEE Forge Manim - Shared Configuration
+# Nexus JEE Manim - Shared Configuration
 # Common settings for all animation scenes
 
 from manim import *
@@ -14,7 +14,7 @@ ANIMATION_DURATION = 8.0
 INSIGHT_DURATION = 2.0
 TOTAL_DURATION = 15.0
 
-# Colors matching the JEE Forge dark theme
+# Colors matching the Nexus JEE dark theme
 BG_COLOR = "#0d1117"
 PRIMARY_COLOR = "#7c3aed"      # Violet (app accent)
 SECONDARY_COLOR = "#06b6d4"    # Cyan

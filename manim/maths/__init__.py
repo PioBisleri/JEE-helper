@@ -1,1 +1,1 @@
-# JEE Forge Manim - Math animations
+# Nexus JEE Manim - Math animations

@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { storage } from '../utils/storage';
-import { generateWeeklyTest, callAI } from '../utils/api';
+import { callAI } from '../utils/api';
 import { CHAPTERS } from '../data/chapters';
 import { useUser } from '../components/UserContext';
 import { useToast } from '../components/ToastContext';
 import OptionButton from '../components/OptionButton';
-import { SkeletonQuestion } from '../components/LoadingSkeleton';
 import { parseLaTeX } from '../components/DailyChallenge';
-import { NoteIcon, ClockIcon, StatsIcon, ThunderIcon, WarningIcon } from '../components/Icons';
-import { motion } from 'framer-motion';
+import { NoteIcon, ClockIcon, ThunderIcon, WarningIcon } from '../components/Icons';
 
 async function generateTestQuestionsBatch(subject, chapters, count, difficulty = 'medium') {
   const prompt = `Generate a batch of ${count} multiple choice questions for JEE Mains.
@@ -36,153 +34,87 @@ Return ONLY this JSON schema:
 
 export default function TestPage() {
   const navigate = useNavigate();
-  const { gainXP, name } = useUser();
+  const { gainXP } = useUser();
   const { showToast } = useToast();
 
-  const conceptsLearned = useMemo(() => storage.getConceptsLearned(), []);
-
-  // Configuration Phase States
-  const [testPhase, setTestPhase] = useState('config'); // config, loading, testing, completed
-  const [configTab, setConfigTab] = useState('sim'); // sim, custom
-  const [simType, setSimType] = useState('pcm'); // pcm, phy, chem, math
-  
-  // Custom Practice States
+  const [testPhase, setTestPhase] = useState('config');
+  const [configTab, setConfigTab] = useState('sim');
+  const [simType, setSimType] = useState('pcm');
   const [customSubject, setCustomSubject] = useState('physics');
-  const [selectedChapters, setSelectedChapters] = useState({});
+  const [selectedChapters, setSelectedChapters] = useState(() => {
+    const chapters = CHAPTERS['physics'] || [];
+    const initial = {};
+    chapters.forEach(ch => { initial[ch.id] = true; });
+    return initial;
+  });
   const [customQCount, setCustomQCount] = useState(10);
   const [customDifficulty, setCustomDifficulty] = useState('medium');
   const [isTimerEnabled, setIsTimerEnabled] = useState(true);
 
-  // Loading Progress
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [totalQuestionsToLoad, setTotalQuestionsToLoad] = useState(0);
 
-  // Test Execution States
   const [test, setTest] = useState(null);
   const [currentQIdx, setCurrentQIdx] = useState(0);
-  const [answers, setAnswers] = useState({}); // { qIndex: selectedLetter }
-  const [flaggedQuestions, setFlaggedQuestions] = useState({}); // { qIndex: boolean }
+  const [answers, setAnswers] = useState({});
+  const [flaggedQuestions, setFlaggedQuestions] = useState({});
   const [timeLeft, setTimeLeft] = useState(0);
-  const [testDuration, setTestDuration] = useState(0); // overall duration
-  
-  // Results States
+
   const [score, setScore] = useState(0);
   const [grade, setGrade] = useState('D');
   const [resultsList, setResultsList] = useState([]);
   const [weakTips, setWeakTips] = useState({});
   const [tipsLoading, setTipsLoading] = useState(false);
-
-  // Count up animation score
   const [animatedScore, setAnimatedScore] = useState(0);
 
-  // Initialize all chapters as selected when subject changes
-  useEffect(() => {
-    const chapters = CHAPTERS[customSubject] || [];
-    const initial = {};
-    chapters.forEach(ch => {
-      initial[ch.id] = true;
-    });
-    setSelectedChapters(initial);
-  }, [customSubject]);
+  const toggleChapter = (id) => setSelectedChapters(prev => ({ ...prev, [id]: !prev[id] }));
 
-  // Chapter togglers
-  const toggleChapter = (id) => {
-    setSelectedChapters(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  };
-
-  const handleSelectAllChapters = () => {
-    const chapters = CHAPTERS[customSubject] || [];
-    const updated = { ...selectedChapters };
-    chapters.forEach(ch => {
-      updated[ch.id] = true;
-    });
-    setSelectedChapters(updated);
-  };
-
-  const handleClearAllChapters = () => {
-    const chapters = CHAPTERS[customSubject] || [];
-    const updated = { ...selectedChapters };
-    chapters.forEach(ch => {
-      updated[ch.id] = false;
-    });
-    setSelectedChapters(updated);
-  };
-
-  // Timer runner
   useEffect(() => {
     if (testPhase !== 'testing') return;
-    if (configTab === 'custom' && !isTimerEnabled) return; // No timer in practice mode
-
-    if (timeLeft <= 0) {
-      handleSubmitTest();
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
-    }, 1000);
-
+    if (configTab === 'custom' && !isTimerEnabled) return;
+    if (timeLeft <= 0) { handleSubmitTest(); return; }
+    const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
     return () => clearInterval(timer);
   }, [testPhase, timeLeft, configTab, isTimerEnabled]);
 
-  // Format countdown minutes and seconds
   const formatCountdown = (secs) => {
     if (secs < 0) return '0:00';
     const mins = Math.floor(secs / 60);
-    const remainingSecs = secs % 60;
-    return `${mins}:${remainingSecs.toString().padStart(2, '0')}`;
+    return `${mins}:${(secs % 60).toString().padStart(2, '0')}`;
   };
 
   const startTestLoading = async (subjectParamsList) => {
     setTestPhase('loading');
     setLoadingProgress(0);
-    
-    // Calculate total questions to generate
     const totalQs = subjectParamsList.reduce((acc, curr) => acc + curr.count, 0);
     setTotalQuestionsToLoad(totalQs);
 
     try {
       const allQuestions = [];
-      
       for (const param of subjectParamsList) {
-        const { subject, chapters, count, difficulty } = param;
-        let generatedForSubject = 0;
-        
-        while (generatedForSubject < count) {
-          const batchSize = Math.min(5, count - generatedForSubject);
-          const batch = await generateTestQuestionsBatch(subject, chapters, batchSize, difficulty);
+        let generated = 0;
+        while (generated < param.count) {
+          const batchSize = Math.min(5, param.count - generated);
+          const batch = await generateTestQuestionsBatch(param.subject, param.chapters, batchSize, param.difficulty);
           allQuestions.push(...batch);
-          generatedForSubject += batchSize;
+          generated += batchSize;
           setLoadingProgress(allQuestions.length);
         }
       }
-      
-      if (simType === 'pcm' && configTab === 'sim') {
-        // Shuffle the mixed PCM mock exam questions
-        allQuestions.sort(() => Math.random() - 0.5);
-      }
+      if (simType === 'pcm' && configTab === 'sim') allQuestions.sort(() => Math.random() - 0.5);
 
       setTest({ questions: allQuestions });
-      
-      // Set test duration
       let durationSeconds = 0;
-      if (configTab === 'sim') {
-        durationSeconds = simType === 'pcm' ? 180 * 60 : 60 * 60;
-      } else {
-        durationSeconds = isTimerEnabled ? customQCount * 2 * 60 : 9999 * 60;
-      }
+      if (configTab === 'sim') durationSeconds = simType === 'pcm' ? 180 * 60 : 60 * 60;
+      else durationSeconds = isTimerEnabled ? customQCount * 2 * 60 : 9999 * 60;
 
       setTimeLeft(durationSeconds);
-      setTestDuration(durationSeconds);
       setAnswers({});
       setFlaggedQuestions({});
       setCurrentQIdx(0);
       setTestPhase('testing');
-    } catch (err) {
-      showToast('Error generating mock test questions. Please try again.', 'error');
+    } catch {
+      showToast('Error generating questions. Please try again.', 'error');
       setTestPhase('config');
     }
   };
@@ -190,345 +122,198 @@ export default function TestPage() {
   const handleStartTest = () => {
     if (configTab === 'sim') {
       if (simType === 'pcm') {
-        const physicsChs = CHAPTERS.physics.map(c => c.name);
-        const chemistryChs = CHAPTERS.chemistry.map(c => c.name);
-        const mathChs = CHAPTERS.math.map(c => c.name);
-        
         startTestLoading([
-          { subject: 'physics', chapters: physicsChs, count: 25, difficulty: 'medium' },
-          { subject: 'chemistry', chapters: chemistryChs, count: 25, difficulty: 'medium' },
-          { subject: 'math', chapters: mathChs, count: 25, difficulty: 'medium' }
+          { subject: 'physics', chapters: CHAPTERS.physics.map(c => c.name), count: 25, difficulty: 'medium' },
+          { subject: 'chemistry', chapters: CHAPTERS.chemistry.map(c => c.name), count: 25, difficulty: 'medium' },
+          { subject: 'math', chapters: CHAPTERS.math.map(c => c.name), count: 25, difficulty: 'medium' }
         ]);
       } else {
-        const subjectName = simType === 'phy' ? 'physics' : (simType === 'chem' ? 'chemistry' : 'math');
-        const subjectChs = CHAPTERS[subjectName].map(c => c.name);
-        startTestLoading([
-          { subject: subjectName, chapters: subjectChs, count: 25, difficulty: 'medium' }
-        ]);
+        const sub = simType === 'phy' ? 'physics' : simType === 'chem' ? 'chemistry' : 'math';
+        startTestLoading([{ subject: sub, chapters: CHAPTERS[sub].map(c => c.name), count: 25, difficulty: 'medium' }]);
       }
     } else {
-      // Custom Practice Test
-      const activeChapters = CHAPTERS[customSubject]
-        ?.filter(c => selectedChapters[c.id])
-        .map(c => c.name) || [];
-      
-      if (activeChapters.length === 0) {
-        showToast('Please select at least one chapter to practice!', 'warning');
-        return;
-      }
-
-      startTestLoading([
-        { subject: customSubject, chapters: activeChapters, count: customQCount, difficulty: customDifficulty }
-      ]);
+      const active = CHAPTERS[customSubject]?.filter(c => selectedChapters[c.id]).map(c => c.name) || [];
+      if (!active.length) { showToast('Select at least one chapter.', 'warning'); return; }
+      startTestLoading([{ subject: customSubject, chapters: active, count: customQCount, difficulty: customDifficulty }]);
     }
   };
 
-  const handleSelectOption = (letter) => {
-    setAnswers(prev => ({
-      ...prev,
-      [currentQIdx]: letter
-    }));
-  };
-
-  const toggleFlag = () => {
-    setFlaggedQuestions(prev => ({
-      ...prev,
-      [currentQIdx]: !prev[currentQIdx]
-    }));
-  };
+  const handleSelectOption = (letter) => setAnswers(prev => ({ ...prev, [currentQIdx]: letter }));
+  const toggleFlag = () => setFlaggedQuestions(prev => ({ ...prev, [currentQIdx]: !prev[currentQIdx] }));
 
   async function handleSubmitTest() {
     if (!test) return;
-
     let correctCount = 0;
     const items = test.questions.map((q, idx) => {
       const chosen = answers[idx];
       const correct = chosen === q.answer;
       if (correct) correctCount++;
-
-      return {
-        question: q.question,
-        concept: q.primaryConcept,
-        difficulty: q.difficulty,
-        chosen: chosen || '—',
-        correctAnswer: q.answer,
-        correct,
-        whyCorrect: q.whyCorrect
-      };
+      return { question: q.question, concept: q.primaryConcept, difficulty: q.difficulty, chosen: chosen || '—', correctAnswer: q.answer, correct, whyCorrect: q.whyCorrect };
     });
 
     setResultsList(items);
     setScore(correctCount);
-    
-    // Performance Grade Calculation
-    const totalQCount = test.questions.length;
-    const ratio = correctCount / totalQCount;
+    const ratio = correctCount / test.questions.length;
     let computedGrade = 'D';
     if (ratio >= 0.95) computedGrade = 'S';
     else if (ratio >= 0.8) computedGrade = 'A';
     else if (ratio >= 0.6) computedGrade = 'B';
     else if (ratio >= 0.4) computedGrade = 'C';
     setGrade(computedGrade);
-
     setTestPhase('completed');
 
-    // Trigger score increment animation
     let count = 0;
     const interval = setInterval(() => {
-      if (count < correctCount) {
-        count++;
-        setAnimatedScore(count);
-      } else {
-        clearInterval(interval);
-      }
+      if (count < correctCount) { count++; setAnimatedScore(count); }
+      else clearInterval(interval);
     }, 1500 / Math.max(correctCount, 1));
 
-    // Save test history record in storage
     const weeklyData = storage.getWeeklyData();
     const isSimulation = configTab === 'sim';
-    const displaySubject = isSimulation ? `Simulation (${simType.toUpperCase()})` : `Custom (${customSubject.toUpperCase()})`;
-    weeklyData.testHistory.push({
-      date: new Date().toISOString(),
-      score: correctCount,
-      total: totalQCount,
-      subject: displaySubject,
-      challengeMode: isSimulation
-    });
-    
-    // Flag weak concepts
+    weeklyData.testHistory.push({ date: new Date().toISOString(), score: correctCount, total: test.questions.length, subject: isSimulation ? `Sim (${simType.toUpperCase()})` : `Custom (${customSubject.toUpperCase()})`, challengeMode: isSimulation });
+
     const wrongConcepts = [...new Set(items.filter(i => !i.correct).map(i => i.concept))];
     weeklyData.currentWeekConcepts = [...new Set([...(weeklyData.currentWeekConcepts || []), ...wrongConcepts])];
     storage.setWeeklyData(weeklyData);
 
-    // XP calculation: +20 XP per correct response. Simulation gives 1.5x.
     const multiplier = isSimulation ? 1.5 : 1.0;
-    const xpWon = Math.round(correctCount * 20 * multiplier);
-    gainXP(xpWon);
+    gainXP(Math.round(correctCount * 20 * multiplier));
 
-    // Generate revision tips for weak concepts
     if (wrongConcepts.length > 0) {
       setTipsLoading(true);
       try {
         const prompt = `Generate revision tips for these weak JEE concepts: ${wrongConcepts.join(', ')}.
 Return ONLY this JSON schema mapping concepts to a one-sentence tip:
-{
-  "tips": {
-    "conceptName": "one sentence action revision advice"
-  }
-}`;
+{ "tips": { "conceptName": "one sentence action revision advice" } }`;
         const data = await callAI(prompt);
         setWeakTips(data.tips || {});
-      } catch (e) {
-        console.warn('Failed to load weak tips:', e);
-      } finally {
-        setTipsLoading(false);
-      }
+      } catch { /* ignore */ }
+      finally { setTipsLoading(false); }
     }
   }
 
-  // Sort wrong first for results table
-  const sortedResults = useMemo(() => {
-    return [...resultsList].sort((a, b) => {
-      if (a.correct === b.correct) return 0;
-      return a.correct ? 1 : -1; // incorrect first
-    });
-  }, [resultsList]);
+  const sortedResults = useMemo(() => [...resultsList].sort((a, b) => (a.correct === b.correct ? 0 : a.correct ? 1 : -1)), [resultsList]);
 
-  // Score color shift mapper
   const getScoreColor = () => {
-    const totalQCount = test?.questions.length || 10;
-    const ratio = score / totalQCount;
-    if (ratio >= 0.7) return 'var(--success)';
-    if (ratio >= 0.4) return 'var(--warning)';
-    return 'var(--danger)';
+    const ratio = score / (test?.questions.length || 10);
+    return ratio >= 0.7 ? 'var(--success)' : ratio >= 0.4 ? 'var(--warning)' : 'var(--danger)';
   };
 
-  // --- CONFIG PHASE VIEW ---
+  // ─── CONFIG PHASE ───
   if (testPhase === 'config') {
     return (
-      <div style={styles.page}>
-        <div className="main-content mx-auto p-6 max-w-2xl">
-          <h2 style={{ ...styles.pageTitle, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <NoteIcon size={24} /> Mock & Practice Exams
+      <div style={{ minHeight: '100vh', paddingBottom: '48px' }}>
+        <div className="mx-auto px-4 max-w-2xl" style={{ paddingTop: '64px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <NoteIcon size={22} /> Mock & Practice
           </h2>
-          <p style={styles.pageSubtitle}>Attempt full JEE mock papers or customize practicing from specific topics.</p>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '28px' }}>Full JEE simulations or topic-specific practice.</p>
 
-          {/* Sub-tabs for Config Type */}
-          <div style={styles.configTabsRow}>
-            <button
-              style={{
-                ...styles.configTabBtn,
-                borderBottom: configTab === 'sim' ? '3px solid var(--accent)' : 'none',
-                color: configTab === 'sim' ? 'var(--text-primary)' : 'var(--text-secondary)'
-              }}
-              onClick={() => setConfigTab('sim')}
-            >
-              JEE Exam Simulation
-            </button>
-            <button
-              style={{
-                ...styles.configTabBtn,
-                borderBottom: configTab === 'custom' ? '3px solid var(--accent)' : 'none',
-                color: configTab === 'custom' ? 'var(--text-primary)' : 'var(--text-secondary)'
-              }}
-              onClick={() => setConfigTab('custom')}
-            >
-              Custom Practice Test
-            </button>
+          {/* Tab selector */}
+          <div style={styles.segmentedControl}>
+            <button style={{ ...styles.segmentBtn, backgroundColor: configTab === 'sim' ? 'var(--accent)' : 'transparent', color: configTab === 'sim' ? '#fff' : 'var(--text-secondary)' }} onClick={() => setConfigTab('sim')}>Exam Simulation</button>
+            <button style={{ ...styles.segmentBtn, backgroundColor: configTab === 'custom' ? 'var(--accent)' : 'transparent', color: configTab === 'custom' ? '#fff' : 'var(--text-secondary)' }} onClick={() => setConfigTab('custom')}>Custom Practice</button>
           </div>
 
           {configTab === 'sim' ? (
-            <div style={styles.card} className="card">
-              <h3 style={styles.cardSectionHeader}>Select Simulation Paper</h3>
-              <p style={styles.settingDesc}>Simulate the strict environment of JEE Mains. Navigation is free, hints are locked, and grading is calibrated to exam standard.</p>
-              
-              <div style={styles.simSelectorGrid}>
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: '700', margin: 0 }}>Select paper type</h3>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px' }}>
                 {[
-                  { id: 'pcm', label: 'Full PCM Paper', desc: '75 Qs | 180 Mins | Physics, Chem & Math' },
-                  { id: 'phy', label: 'Physics Mock', desc: '25 Qs | 60 Mins | Physics only' },
-                  { id: 'chem', label: 'Chemistry Mock', desc: '25 Qs | 60 Mins | Chemistry only' },
-                  { id: 'math', label: 'Mathematics Mock', desc: '25 Qs | 60 Mins | Math only' }
+                  { id: 'pcm', label: 'Full PCM', desc: '75 Qs · 180 min' },
+                  { id: 'phy', label: 'Physics', desc: '25 Qs · 60 min' },
+                  { id: 'chem', label: 'Chemistry', desc: '25 Qs · 60 min' },
+                  { id: 'math', label: 'Math', desc: '25 Qs · 60 min' },
                 ].map(item => (
                   <div
                     key={item.id}
-                    style={{
-                      ...styles.simCard,
-                      border: simType === item.id ? '2px solid var(--accent)' : '1px solid var(--border-default)',
-                      boxShadow: simType === item.id ? '0 0 12px var(--accent-glow)' : 'none'
-                    }}
                     onClick={() => setSimType(item.id)}
+                    style={{
+                      padding: '12px 14px',
+                      borderRadius: 'var(--radius-md)',
+                      border: simType === item.id ? '1.5px solid var(--accent)' : '1px solid var(--border-default)',
+                      backgroundColor: simType === item.id ? 'var(--accent-dim)' : 'var(--bg-secondary)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                    }}
                   >
-                    <strong style={{ color: 'var(--text-primary)' }}>{item.label}</strong>
-                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>{item.desc}</span>
+                    <strong style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{item.label}</strong>
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0' }}>{item.desc}</p>
                   </div>
                 ))}
               </div>
 
-              <div style={styles.cautionBox}>
-                <span style={styles.cautionIcon}>⚠️</span>
-                <div>
-                  <strong style={{ color: 'var(--danger)', fontSize: '13px' }}>CAUTION: Exam Simulation Mode</strong>
-                  <p style={styles.cautionText}>Zero scaffolding helps. Zero hints available. Free question navigation allowed. Timer auto-submits.</p>
-                </div>
+              <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--danger-dim)', border: '1px solid rgba(239, 68, 68, 0.1)' }}>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: 0 }}>
+                  <strong style={{ color: 'var(--danger)' }}>Exam mode:</strong> No hints, no scaffolding. Timer auto-submits.
+                </p>
               </div>
 
-              <button 
-                className="btn btn-primary" 
-                style={styles.beginBtn}
-                onClick={handleStartTest}
-              >
-                Launch Mock Exam
-              </button>
+              <button className="btn btn-primary w-full" onClick={handleStartTest}>Launch Exam</button>
             </div>
           ) : (
-            <div style={styles.card} className="card">
-              <h3 style={styles.cardSectionHeader}>1. Choose Subject</h3>
-              <div style={styles.subjectSelectorContainer}>
-                {['physics', 'chemistry', 'math'].map(sub => (
-                  <button
-                    key={sub}
-                    style={{
-                      ...styles.subjectTab,
-                      backgroundColor: customSubject === sub ? 'var(--accent)' : 'transparent',
-                      borderColor: customSubject === sub ? 'var(--accent)' : 'var(--border-default)',
-                      color: customSubject === sub ? '#030508' : 'var(--text-secondary)',
-                      boxShadow: customSubject === sub ? '0 0 10px var(--accent-glow)' : 'none'
-                    }}
-                    onClick={() => setCustomSubject(sub)}
-                  >
-                    {sub.toUpperCase()}
-                  </button>
-                ))}
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Subject */}
+              <div>
+                <label style={styles.label}>Subject</label>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {['physics', 'chemistry', 'math'].map(sub => (
+                    <button key={sub} style={{ ...styles.pillBtn, backgroundColor: customSubject === sub ? 'var(--accent)' : 'var(--bg-secondary)', color: customSubject === sub ? '#fff' : 'var(--text-secondary)', borderColor: customSubject === sub ? 'var(--accent)' : 'var(--border-default)' }} onClick={() => setCustomSubject(sub)}>
+                      {sub.charAt(0).toUpperCase() + sub.slice(1)}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              <h3 style={{ ...styles.cardSectionHeader, marginTop: '16px' }}>2. Select Chapters</h3>
-              <div style={styles.chapterHelperRow}>
-                <button className="btn btn-ghost" style={styles.ghostLink} onClick={handleSelectAllChapters}>Select All</button>
-                <button className="btn btn-ghost" style={styles.ghostLink} onClick={handleClearAllChapters}>Clear All</button>
+              {/* Chapters */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label style={styles.label}>Chapters</label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button className="btn btn-ghost" style={{ padding: '0', fontSize: '11px' }} onClick={() => { const u = {}; CHAPTERS[customSubject]?.forEach(c => u[c.id] = true); setSelectedChapters(u); }}>All</button>
+                    <button className="btn btn-ghost" style={{ padding: '0', fontSize: '11px' }} onClick={() => { const u = {}; CHAPTERS[customSubject]?.forEach(c => u[c.id] = false); setSelectedChapters(u); }}>None</button>
+                  </div>
+                </div>
+                <div style={{ maxHeight: '160px', overflowY: 'auto', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '8px', backgroundColor: 'var(--bg-secondary)' }}>
+                  {(CHAPTERS[customSubject] || []).map(ch => (
+                    <label key={ch.id} style={{ display: 'flex', alignItems: 'center', padding: '4px 0', cursor: 'pointer', fontSize: '13px', color: 'var(--text-primary)' }}>
+                      <input type="checkbox" checked={!!selectedChapters[ch.id]} onChange={() => toggleChapter(ch.id)} style={{ width: '14px', height: '14px', accentColor: 'var(--accent)', marginRight: '8px' }} />
+                      {ch.name}
+                    </label>
+                  ))}
+                </div>
               </div>
 
-              <div style={styles.chaptersScrollContainer}>
-                {(CHAPTERS[customSubject] || []).map(ch => (
-                  <label key={ch.id} style={styles.chapterCheckboxLabel}>
-                    <input
-                      type="checkbox"
-                      checked={!!selectedChapters[ch.id]}
-                      onChange={() => toggleChapter(ch.id)}
-                      style={styles.checkbox}
-                    />
-                    <span style={{ fontSize: '13px', marginLeft: '8px', color: 'var(--text-primary)' }}>{ch.name}</span>
-                  </label>
-                ))}
-              </div>
-
-              <h3 style={{ ...styles.cardSectionHeader, marginTop: '16px' }}>3. Practice Config</h3>
-              
-              <div style={styles.configControlsGrid}>
-                {/* Question Count */}
-                <div style={styles.controlGroup}>
-                  <label style={styles.controlLabel}>Questions</label>
-                  <div style={styles.optionsRowPills}>
-                    {[5, 10, 15, 20, 25, 30].map(cnt => (
-                      <button
-                        key={cnt}
-                        style={{
-                          ...styles.pillBtn,
-                          backgroundColor: customQCount === cnt ? 'var(--accent)' : 'var(--bg-secondary)',
-                          borderColor: customQCount === cnt ? 'var(--accent)' : 'var(--border-default)',
-                          color: customQCount === cnt ? '#030508' : 'var(--text-primary)'
-                        }}
-                        onClick={() => setCustomQCount(cnt)}
-                      >
-                        {cnt}
-                      </button>
+              {/* Config */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={styles.label}>Questions</label>
+                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                    {[5, 10, 15, 20, 25].map(cnt => (
+                      <button key={cnt} style={{ ...styles.miniPill, backgroundColor: customQCount === cnt ? 'var(--accent)' : 'var(--bg-secondary)', color: customQCount === cnt ? '#fff' : 'var(--text-secondary)' }} onClick={() => setCustomQCount(cnt)}>{cnt}</button>
                     ))}
                   </div>
                 </div>
-
-                {/* Difficulty */}
-                <div style={styles.controlGroup}>
-                  <label style={styles.controlLabel}>Difficulty</label>
-                  <div style={styles.optionsRowPills}>
+                <div>
+                  <label style={styles.label}>Difficulty</label>
+                  <div style={{ display: 'flex', gap: '4px' }}>
                     {['easy', 'medium', 'hard'].map(diff => (
-                      <button
-                        key={diff}
-                        style={{
-                          ...styles.pillBtn,
-                          textTransform: 'capitalize',
-                          backgroundColor: customDifficulty === diff ? 'var(--accent)' : 'var(--bg-secondary)',
-                          borderColor: customDifficulty === diff ? 'var(--accent)' : 'var(--border-default)',
-                          color: customDifficulty === diff ? '#030508' : 'var(--text-primary)'
-                        }}
-                        onClick={() => setCustomDifficulty(diff)}
-                      >
-                        {diff}
-                      </button>
+                      <button key={diff} style={{ ...styles.miniPill, textTransform: 'capitalize', backgroundColor: customDifficulty === diff ? 'var(--accent)' : 'var(--bg-secondary)', color: customDifficulty === diff ? '#fff' : 'var(--text-secondary)' }} onClick={() => setCustomDifficulty(diff)}>{diff}</button>
                     ))}
                   </div>
                 </div>
-
-                {/* Timer Toggle */}
-                <div style={styles.optionRowCustom}>
-                  <div>
-                    <strong>Time limit constraint</strong>
-                    <p style={styles.settingDesc}>Allows 2 minutes per question. Disabling turns off the countdown timer completely.</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={isTimerEnabled}
-                    onChange={e => setIsTimerEnabled(e.target.checked)}
-                    style={styles.checkbox}
-                  />
-                </div>
               </div>
 
-              <button
-                className="btn btn-primary"
-                style={styles.beginBtn}
-                onClick={handleStartTest}
-              >
-                Launch Practice Test
-              </button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--border-subtle)' }}>
+                <div>
+                  <strong style={{ fontSize: '13px' }}>Timer</strong>
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '1px 0 0' }}>2 min per question</p>
+                </div>
+                <input type="checkbox" checked={isTimerEnabled} onChange={e => setIsTimerEnabled(e.target.checked)} style={{ width: '16px', height: '16px', accentColor: 'var(--accent)' }} />
+              </div>
+
+              <button className="btn btn-primary w-full" onClick={handleStartTest}>Launch Practice</button>
             </div>
           )}
         </div>
@@ -536,260 +321,177 @@ Return ONLY this JSON schema mapping concepts to a one-sentence tip:
     );
   }
 
-  // --- LOADING TEST VIEW ---
+  // ─── LOADING ───
   if (testPhase === 'loading') {
     const percent = totalQuestionsToLoad > 0 ? Math.round((loadingProgress / totalQuestionsToLoad) * 100) : 0;
     return (
-      <div style={styles.page}>
-        <div className="main-content mx-auto p-6 max-w-lg" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-          <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-            Compiling and calibrating your personalized mock test...
-          </p>
-          <div style={styles.progressBarContainer}>
-            <div style={{ ...styles.progressBarFiller, width: `${percent}%` }} />
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '16px' }}>Generating questions...</p>
+          <div style={{ width: '200px', height: '4px', backgroundColor: 'var(--bg-elevated)', borderRadius: '2px', overflow: 'hidden', margin: '0 auto 12px' }}>
+            <div style={{ height: '100%', backgroundColor: 'var(--accent)', borderRadius: '2px', width: `${percent}%`, transition: 'width 0.3s ease' }} />
           </div>
-          <span style={{ fontSize: '13px', marginTop: '12px', color: 'var(--accent-hover)', fontFamily: 'var(--font-mono)' }}>
-            Generating Questions: {loadingProgress} / {totalQuestionsToLoad} ({percent}%)
-          </span>
+          <span style={{ fontSize: '12px', color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>{loadingProgress}/{totalQuestionsToLoad}</span>
         </div>
       </div>
     );
   }
 
-  // --- TESTING PHASE VIEW ---
+  // ─── TESTING ───
   if (testPhase === 'testing' && test) {
     const question = test.questions[currentQIdx];
-    const isPulsing = timeLeft < 120; // 2 mins
-    const isRed = timeLeft < 300; // 5 mins
+    const isPulsing = timeLeft < 120;
+    const isRed = timeLeft < 300;
 
     return (
-      <div style={styles.testingPage}>
+      <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', display: 'flex', flexDirection: 'column' }}>
         {/* Fixed Header */}
-        <div style={styles.fixedTestHeader} className="glass">
-          <div style={styles.testHeaderRow}>
-            <span style={styles.testTitleText}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                {configTab === 'sim' ? (
-                  <>
-                    <ThunderIcon size={14} color="var(--warning)" />
-                    <span>JEE Simulation</span>
-                  </>
-                ) : (
-                  <>
-                    <NoteIcon size={14} />
-                    <span>Practice Test</span>
-                  </>
-                )}
-                <span>({configTab === 'sim' ? simType.toUpperCase() : customSubject.toUpperCase()})</span>
-              </span>
+        <div style={styles.testHeader} className="glass">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '13px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {configTab === 'sim' ? <ThunderIcon size={12} color="var(--warning)" /> : <NoteIcon size={12} />}
+              {configTab === 'sim' ? `Sim ${simType.toUpperCase()}` : `Practice ${customSubject.charAt(0).toUpperCase() + customSubject.slice(1)}`}
             </span>
-            <div style={{
-              ...styles.timerBox,
-              color: isRed ? 'var(--danger)' : 'var(--accent-hover)',
-              animation: isPulsing ? 'pulse 1s infinite' : 'none'
-            }}>
-              <ClockIcon size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-              {(!isTimerEnabled && configTab === 'custom') ? 'Practice Mode' : formatCountdown(timeLeft)}
-            </div>
-            <button className="btn btn-secondary" style={styles.submitTestBtn} onClick={handleSubmitTest}>
-              Submit Test
-            </button>
+            <span style={{ fontSize: '14px', fontWeight: '700', fontFamily: 'var(--font-mono)', color: isRed ? 'var(--danger)' : 'var(--text-secondary)', animation: isPulsing ? 'pulse 1s infinite' : 'none' }}>
+              <ClockIcon size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+              {(!isTimerEnabled && configTab === 'custom') ? '∞' : formatCountdown(timeLeft)}
+            </span>
+            <button className="btn btn-secondary" style={{ padding: '5px 12px', fontSize: '11px' }} onClick={handleSubmitTest}>Submit</button>
           </div>
 
-          {/* Navigator dots */}
-          <div style={styles.navigatorDots}>
-            {test.questions.map((_, idx) => {
-              const isAnswered = answers[idx] !== undefined;
-              const isCurrent = idx === currentQIdx;
-              const isFlagged = flaggedQuestions[idx];
-
-              return (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentQIdx(idx)}
-                  style={{
-                    ...styles.navNode,
-                    ...(isAnswered ? styles.navNodeAnswered : {}),
-                    ...(isCurrent ? styles.navNodeCurrent : {}),
-                    ...(isFlagged ? styles.navNodeFlagged : {})
-                  }}
-                >
-                  {isFlagged && <span style={styles.flagDot} />}
-                  {idx + 1}
-                </button>
-              );
-            })}
+          {/* Nav dots */}
+          <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingTop: '4px' }}>
+            {test.questions.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentQIdx(idx)}
+                style={{
+                  width: '24px', height: '24px', borderRadius: '50%',
+                  border: `1px solid ${idx === currentQIdx ? 'var(--accent)' : flaggedQuestions[idx] ? 'var(--warning)' : 'var(--border-default)'}`,
+                  backgroundColor: answers[idx] !== undefined ? 'var(--accent)' : 'var(--bg-secondary)',
+                  color: answers[idx] !== undefined ? '#fff' : 'var(--text-muted)',
+                  fontSize: '10px', fontWeight: '700', fontFamily: 'var(--font-mono)',
+                  cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  position: 'relative',
+                }}
+              >
+                {idx + 1}
+                {flaggedQuestions[idx] && <span style={{ position: 'absolute', top: '-1px', right: '-1px', width: '5px', height: '5px', backgroundColor: 'var(--warning)', borderRadius: '50%' }} />}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Solver Body */}
-        <div style={styles.solverBody} className="mx-auto p-4 max-w-lg w-full">
-          <div style={styles.card} className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <span style={styles.difficultyChip}>Question {currentQIdx + 1} ({question.difficulty})</span>
-              <button 
-                style={{
-                  ...styles.flagBtn,
-                  color: flaggedQuestions[currentQIdx] ? 'var(--warning)' : 'var(--text-secondary)'
-                }}
-                onClick={toggleFlag}
-              >
-                🚩 {flaggedQuestions[currentQIdx] ? 'Flagged for Review' : 'Flag for Review'}
+        {/* Question Body */}
+        <div style={{ paddingTop: '100px', paddingBottom: '32px', flex: 1 }} className="mx-auto px-4 max-w-lg w-full">
+          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Q{currentQIdx + 1} · {question.difficulty}</span>
+              <button style={{ background: 'none', border: 'none', fontSize: '11px', fontWeight: '600', color: flaggedQuestions[currentQIdx] ? 'var(--warning)' : 'var(--text-muted)', cursor: 'pointer' }} onClick={toggleFlag}>
+                🚩 {flaggedQuestions[currentQIdx] ? 'Flagged' : 'Flag'}
               </button>
             </div>
-
-            <div style={styles.questionText}>
+            <div style={{ fontSize: '15px', fontWeight: '500', lineHeight: '1.6' }}>
               {parseLaTeX(question.question)}
             </div>
           </div>
 
-          {/* Options */}
-          <div style={styles.optionsCol}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
             {Object.entries(question.options).map(([key, val]) => (
-              <OptionButton
-                key={key}
-                letter={key}
-                value={val}
-                isSelected={answers[currentQIdx] === key}
-                showAnswer={false}
-                onClick={() => handleSelectOption(key)}
-              />
+              <OptionButton key={key} letter={key} value={val} isSelected={answers[currentQIdx] === key} showAnswer={false} onClick={() => handleSelectOption(key)} />
             ))}
           </div>
 
-          {/* Free navigation footer row */}
-          <div style={styles.navigationRow}>
-            <button
-              className="btn btn-secondary"
-              style={styles.navActionBtn}
-              disabled={currentQIdx === 0}
-              onClick={() => setCurrentQIdx(currentQIdx - 1)}
-            >
-              ← Previous
-            </button>
-            <button
-              className="btn btn-secondary"
-              style={styles.navActionBtn}
-              disabled={currentQIdx === test.questions.length - 1}
-              onClick={() => setCurrentQIdx(currentQIdx + 1)}
-            >
-              Next →
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginTop: '20px' }}>
+            <button className="btn btn-secondary" style={{ flex: 1 }} disabled={currentQIdx === 0} onClick={() => setCurrentQIdx(currentQIdx - 1)}>← Prev</button>
+            <button className="btn btn-secondary" style={{ flex: 1 }} disabled={currentQIdx === test.questions.length - 1} onClick={() => setCurrentQIdx(currentQIdx + 1)}>Next →</button>
           </div>
         </div>
       </div>
     );
   }
 
-  // --- RESULTS PHASE VIEW ---
+  // ─── RESULTS ───
   if (testPhase === 'completed' && test) {
-    const isChallenge = configTab === 'sim';
     const totalQCount = test.questions.length;
     const accuracyPct = Math.round((score / totalQCount) * 100);
+    const isSimulation = configTab === 'sim';
 
     return (
-      <div style={styles.page}>
-        <div className="main-content mx-auto p-6 max-w-3xl">
-          <h2 style={styles.pageTitle}>Test Performance Card</h2>
-          <p style={styles.pageSubtitle}>Detailed diagnostic report of your knowledge verification session.</p>
+      <div style={{ minHeight: '100vh', paddingBottom: '48px' }}>
+        <div className="mx-auto px-4 max-w-3xl" style={{ paddingTop: '64px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '4px' }}>Results</h2>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '28px' }}>Your performance breakdown.</p>
 
-          <div style={styles.resultsHeroGrid}>
-            
-            {/* Animated Score card */}
-            <div style={styles.scoreSummaryCard} className="card glass">
-              <span style={styles.gradeBanner}>Grade: {grade}</span>
-              <div style={{ ...styles.largeScore, color: getScoreColor() }}>
-                {animatedScore} <span style={{ fontSize: '24px', color: 'var(--text-secondary)' }}>/ {totalQCount}</span>
+          {/* Score Hero */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', marginBottom: '24px' }}>
+            <div className="card" style={{ textAlign: 'center', padding: '32px 24px' }}>
+              <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--warning)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Grade {grade}</span>
+              <div style={{ fontSize: '48px', fontWeight: '800', fontFamily: 'var(--font-mono)', color: getScoreColor(), lineHeight: '1.1', margin: '8px 0' }}>
+                {animatedScore}<span style={{ fontSize: '20px', color: 'var(--text-muted)' }}>/{totalQCount}</span>
               </div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
-                Questions correctly answered ({accuracyPct}% accuracy)
+              <div style={{ width: '100%', height: '4px', backgroundColor: 'var(--bg-elevated)', borderRadius: '2px', overflow: 'hidden', marginTop: '8px' }}>
+                <div style={{ height: '100%', backgroundColor: getScoreColor(), borderRadius: '2px', width: `${accuracyPct}%`, transition: 'width 1s ease' }} />
+              </div>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>{accuracyPct}% accuracy</p>
+            </div>
+
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {[
+                  ['Type', isSimulation ? 'Exam Simulation' : 'Practice'],
+                  ['Score', `${score}/${totalQCount}`],
+                  ['XP Earned', `+${Math.round(score * 20 * (isSimulation ? 1.5 : 1))}`],
+                ].map(([label, value]) => (
+                  <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>{label}</span>
+                    <span style={{ fontWeight: '600' }}>{value}</span>
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '12px', paddingTop: '8px', borderTop: '1px solid var(--border-subtle)' }}>
+                Nexus JEE
               </p>
-              <div style={styles.scoreBarContainer}>
-                <div style={{
-                  ...styles.scoreBarFiller,
-                  width: `${accuracyPct}%`,
-                  backgroundColor: getScoreColor()
-                }} />
-              </div>
             </div>
-
-            {/* Share / Verification card */}
-            <div style={styles.shareCard} className="card">
-              <span style={styles.shareHeader}>Nexus JEE Mock Certificate</span>
-              <div style={styles.shareGrid}>
-                <div style={styles.shareItem}>
-                  <span style={styles.shareLabel}>Name</span>
-                  <span style={styles.shareVal}>{name}</span>
-                </div>
-                <div style={styles.shareItem}>
-                  <span style={styles.shareLabel}>Test Type</span>
-                  <span style={styles.shareVal}>{isChallenge ? 'Challenge Mode' : 'Standard Simulation'}</span>
-                </div>
-                <div style={styles.shareItem}>
-                  <span style={styles.shareLabel}>Performance</span>
-                  <span style={styles.shareVal}>{score} / {totalQCount} (Grade {grade})</span>
-                </div>
-                <div style={styles.shareItem}>
-                  <span style={styles.shareLabel}>XP Gained</span>
-                  <span style={styles.shareVal} className="mono-text">+{Math.round(score * 20 * (isChallenge ? 1.5 : 1))} XP</span>
-                </div>
-              </div>
-              <p style={styles.shareFooter}>Generated securely by Nexus JEE Engine.</p>
-            </div>
-
           </div>
 
-          {/* Weak concepts advice section */}
+          {/* Weak Tips */}
           {resultsList.some(r => !r.correct) && (
-            <div style={styles.card} className="card" style={{ marginTop: '24px' }}>
-              <h3 style={{ ...styles.cardSectionHeader, color: 'var(--warning)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <WarningIcon size={18} color="var(--warning)" /> Target Weak Concepts
+            <div className="card" style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: '700', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <WarningIcon size={14} color="var(--warning)" /> Weak Areas
               </h3>
-              <p style={styles.settingDesc} style={{ marginBottom: '16px' }}>
-                We flagged the following concepts for spaced recall repetition. Focus on these tips:
-              </p>
               {tipsLoading ? (
-                <div className="skeleton" style={{ height: '60px', width: '100%' }} />
+                <div className="skeleton" style={{ height: '48px', width: '100%' }} />
               ) : (
-                <div style={styles.weakTipsList}>
-                  {Object.entries(weakTips).map(([concept, tip], idx) => (
-                    <div key={idx} style={styles.tipCard} className="card">
-                      <strong>{concept}</strong>
-                      <p style={styles.tipText}>{tip}</p>
-                    </div>
-                  ))}
-                </div>
+                Object.entries(weakTips).map(([concept, tip], idx) => (
+                  <div key={idx} style={{ padding: '10px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-secondary)', fontSize: '12px' }}>
+                    <strong style={{ color: 'var(--accent)' }}>{concept}</strong>
+                    <p style={{ margin: '2px 0 0', color: 'var(--text-secondary)', lineHeight: '1.4' }}>{tip}</p>
+                  </div>
+                ))
               )}
             </div>
           )}
 
-          {/* Concept Breakdown Table */}
-          <div style={styles.card} className="card" style={{ marginTop: '24px' }}>
-            <h3 style={{ ...styles.cardSectionHeader, display: 'flex', alignItems: 'center', gap: '8px' }}><StatsIcon size={18} /> Concept Breakdown (Incorrect First)</h3>
-            <div style={styles.tableScroll}>
-              <table style={styles.table}>
+          {/* Breakdown Table */}
+          <div className="card" style={{ marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: '700', margin: '0 0 12px' }}>Question Breakdown</h3>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                 <thead>
-                  <tr style={styles.tableRowHeader}>
-                    <th style={styles.th}>Result</th>
-                    <th style={styles.th}>Concept Tested</th>
-                    <th style={styles.th}>Difficulty</th>
-                    <th style={styles.th}>Answer (Yours / Correct)</th>
+                  <tr style={{ borderBottom: '1px solid var(--border-default)' }}>
+                    <th style={{ padding: '8px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: '600', fontSize: '10px', textTransform: 'uppercase' }}>Result</th>
+                    <th style={{ padding: '8px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: '600', fontSize: '10px', textTransform: 'uppercase' }}>Concept</th>
+                    <th style={{ padding: '8px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: '600', fontSize: '10px', textTransform: 'uppercase' }}>Your / Correct</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedResults.map((res, i) => (
-                    <tr key={i} style={styles.tr}>
-                      <td style={styles.td}>
-                        <span style={{
-                          fontWeight: 'bold',
-                          color: res.correct ? 'var(--success)' : 'var(--danger)'
-                        }}>
-                          {res.correct ? '✓ Correct' : '✗ Incorrect'}
-                        </span>
-                      </td>
-                      <td style={styles.td}>{res.concept}</td>
-                      <td style={{ ...styles.td, textTransform: 'capitalize' }}>{res.difficulty}</td>
-                      <td style={styles.td}>{res.chosen} / {res.correctAnswer}</td>
+                    <tr key={i} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                      <td style={{ padding: '8px', color: res.correct ? 'var(--success)' : 'var(--danger)', fontWeight: '600' }}>{res.correct ? '✓' : '✗'}</td>
+                      <td style={{ padding: '8px', color: 'var(--text-primary)' }}>{res.concept}</td>
+                      <td style={{ padding: '8px', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{res.chosen} / {res.correctAnswer}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -797,13 +499,7 @@ Return ONLY this JSON schema mapping concepts to a one-sentence tip:
             </div>
           </div>
 
-          <button 
-            className="btn btn-primary w-full" 
-            style={{ marginTop: '24px' }}
-            onClick={() => navigate('/')}
-          >
-            Back to Dashboard
-          </button>
+          <button className="btn btn-primary w-full" style={{ marginTop: '8px' }} onClick={() => navigate('/')}>Back to Dashboard</button>
         </div>
       </div>
     );
@@ -813,497 +509,62 @@ Return ONLY this JSON schema mapping concepts to a one-sentence tip:
 }
 
 const styles = {
-  page: {
-    minHeight: '100vh',
-    backgroundColor: 'var(--bg-primary)',
-    paddingBottom: '48px'
-  },
-  pageTitle: {
-    fontSize: '24px',
-    fontWeight: '800',
-    marginBottom: '4px'
-  },
-  pageSubtitle: {
-    fontSize: '13px',
-    color: 'var(--text-secondary)',
-    marginBottom: '28px'
-  },
-  card: {
-    padding: '24px !important',
-    backgroundColor: 'var(--bg-card)',
+  segmentedControl: {
     display: 'flex',
-    flexDirection: 'column',
-    gap: '16px'
-  },
-  cardSectionHeader: {
-    fontSize: '15px',
-    fontWeight: '700',
-    borderBottom: '1px solid var(--border-subtle)',
-    paddingBottom: '10px'
-  },
-  subjectSelectorContainer: {
-    display: 'flex',
-    gap: '8px',
-    flexWrap: 'wrap'
-  },
-  subjectTab: {
-    padding: '10px 16px',
-    borderRadius: '10px',
-    border: '1px solid var(--border-default)',
-    backgroundColor: 'transparent',
-    color: 'var(--text-secondary)',
-    fontWeight: '600',
-    fontSize: '12px',
-    cursor: 'pointer',
-    transition: 'all 0.15s'
-  },
-  activeSubjectTab: {
-    backgroundColor: 'var(--accent)',
-    borderColor: 'var(--accent)',
-    color: '#ffffff',
-    boxShadow: '0 0 10px var(--accent-glow)'
-  },
-  conceptSummaryLabel: {
-    fontSize: '12px',
-    color: 'var(--text-secondary)'
-  },
-  conceptTagsRow: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '8px',
-    marginTop: '12px'
-  },
-  conceptTag: {
-    padding: '4px 10px',
-    borderRadius: '8px',
     backgroundColor: 'var(--bg-secondary)',
+    borderRadius: 'var(--radius-md)',
+    padding: '3px',
+    marginBottom: '20px',
     border: '1px solid var(--border-subtle)',
-    fontSize: '11px',
-    color: 'var(--text-primary)'
   },
-  conceptTagMore: {
+  segmentBtn: {
+    flex: 1,
+    padding: '8px 16px',
+    borderRadius: 'var(--radius-sm)',
+    border: 'none',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+  },
+  label: {
+    fontSize: '11px',
+    fontWeight: '600',
+    color: 'var(--text-muted)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.03em',
+    display: 'block',
+    marginBottom: '6px',
+  },
+  pillBtn: {
+    padding: '6px 14px',
+    borderRadius: 'var(--radius-full)',
+    border: '1px solid var(--border-default)',
+    cursor: 'pointer',
+    fontSize: '12px',
+    fontWeight: '600',
+    transition: 'all 0.15s',
+  },
+  miniPill: {
     padding: '4px 10px',
-    borderRadius: '8px',
-    backgroundColor: 'var(--accent-dim)',
-    color: 'var(--accent-hover)',
+    borderRadius: 'var(--radius-full)',
+    border: '1px solid var(--border-default)',
+    cursor: 'pointer',
     fontSize: '11px',
-    fontWeight: '600'
+    fontWeight: '600',
+    transition: 'all 0.15s',
   },
-  optionRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingBottom: '16px',
-    borderBottom: '1px solid var(--border-subtle)'
-  },
-  settingDesc: {
-    fontSize: '11px',
-    color: 'var(--text-secondary)',
-    marginTop: '4px',
-    lineHeight: '1.4'
-  },
-  checkbox: {
-    width: '18px',
-    height: '18px',
-    accentColor: 'var(--accent)'
-  },
-  cautionBox: {
-    display: 'flex',
-    gap: '12px',
-    padding: '12px 16px',
-    backgroundColor: 'var(--danger-dim)',
-    border: '1px solid rgba(239, 68, 68, 0.2)',
-    borderRadius: '12px'
-  },
-  cautionIcon: {
-    fontSize: '18px'
-  },
-  cautionText: {
-    fontSize: '11px',
-    color: 'var(--text-secondary)',
-    marginTop: '2px',
-    lineHeight: '1.4'
-  },
-  beginBtn: {
-    width: '100%',
-    marginTop: '8px'
-  },
-  warnText: {
-    fontSize: '11px',
-    color: 'var(--danger)',
-    textAlign: 'center'
-  },
-  testingPage: {
-    minHeight: '100vh',
-    backgroundColor: 'var(--bg-primary)',
-    display: 'flex',
-    flexDirection: 'column',
-    position: 'relative'
-  },
-  fixedTestHeader: {
+  testHeader: {
     position: 'fixed',
     top: 0,
     left: 0,
     right: 0,
     zIndex: 100,
-    padding: '12px 24px 8px 24px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-    borderBottom: '1px solid var(--border-subtle)'
-  },
-  testHeaderRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  testTitleText: {
-    fontSize: '14px',
-    fontWeight: '700'
-  },
-  timerBox: {
-    fontSize: '16px',
-    fontWeight: '700',
-    fontFamily: 'var(--font-mono)'
-  },
-  submitTestBtn: {
-    padding: '8px 16px',
-    fontSize: '12px',
-    backgroundColor: 'var(--success)',
-    color: '#ffffff',
-    border: 'none',
-    ':hover': {
-      backgroundColor: '#16a34a'
-    }
-  },
-  navigatorDots: {
-    display: 'flex',
-    gap: '6px',
-    overflowX: 'auto',
-    paddingBottom: '4px',
-    justifyContent: 'flex-start'
-  },
-  navNode: {
-    width: '28px',
-    height: '28px',
-    borderRadius: '50%',
-    border: '1px solid var(--border-default)',
-    backgroundColor: 'var(--bg-secondary)',
-    color: 'var(--text-secondary)',
-    fontSize: '11px',
-    fontWeight: '700',
-    fontFamily: 'var(--font-mono)',
-    cursor: 'pointer',
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0
-  },
-  navNodeAnswered: {
-    backgroundColor: 'var(--accent)',
-    borderColor: 'var(--accent)',
-    color: '#ffffff'
-  },
-  navNodeCurrent: {
-    borderColor: 'var(--text-primary)',
-    boxShadow: '0 0 0 2px var(--accent-glow)'
-  },
-  navNodeFlagged: {
-    borderColor: 'var(--warning) !important'
-  },
-  flagDot: {
-    position: 'absolute',
-    top: '-2px',
-    right: '-2px',
-    width: '8px',
-    height: '8px',
-    backgroundColor: 'var(--warning)',
-    borderRadius: '50%'
-  },
-  solverBody: {
-    paddingTop: '110px',
-    paddingBottom: '32px',
-    flex: 1
-  },
-  difficultyChip: {
-    fontSize: '11px',
-    fontWeight: '600',
-    color: 'var(--text-secondary)',
-    backgroundColor: 'var(--bg-elevated)',
-    padding: '2px 8px',
-    borderRadius: '6px'
-  },
-  flagBtn: {
-    background: 'none',
-    border: 'none',
-    fontSize: '11px',
-    fontWeight: '600',
-    cursor: 'pointer'
-  },
-  questionText: {
-    fontSize: '16px',
-    fontWeight: '500',
-    lineHeight: '1.6',
-    color: 'var(--text-primary)'
-  },
-  optionsCol: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-    marginTop: '20px'
-  },
-  navigationRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    gap: '16px',
-    marginTop: '24px'
-  },
-  navActionBtn: {
-    flex: 1
-  },
-  resultsHeroGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: '20px',
-    alignItems: 'stretch'
-  },
-  scoreSummaryCard: {
-    padding: '32px !important',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    textAlign: 'center',
-    gap: '12px',
-    justifyContent: 'center'
-  },
-  gradeBanner: {
-    fontSize: '11px',
-    fontWeight: '700',
-    color: 'var(--warning)',
-    textTransform: 'uppercase',
-    letterSpacing: '1px'
-  },
-  largeScore: {
-    fontSize: '56px',
-    fontWeight: '800',
-    fontFamily: 'var(--font-mono)',
-    lineHeight: '1'
-  },
-  scoreBarContainer: {
-    width: '100%',
-    height: '6px',
-    backgroundColor: 'var(--bg-elevated)',
-    borderRadius: '3px',
-    overflow: 'hidden',
-    marginTop: '8px'
-  },
-  scoreBarFiller: {
-    height: '100%',
-    borderRadius: '3px',
-    transition: 'width 1.2s cubic-bezier(0.4, 0, 0.2, 1)'
-  },
-  shareCard: {
-    padding: '24px !important',
-    backgroundColor: 'var(--bg-card)',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    border: '1px solid var(--accent-glow)'
-  },
-  shareHeader: {
-    fontSize: '13px',
-    fontWeight: '700',
-    color: 'var(--accent-hover)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-    borderBottom: '1px solid var(--border-subtle)',
-    paddingBottom: '8px',
-    marginBottom: '12px'
-  },
-  shareGrid: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
-    marginBottom: '12px'
-  },
-  shareItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    fontSize: '13px'
-  },
-  shareLabel: {
-    color: 'var(--text-secondary)'
-  },
-  shareVal: {
-    fontWeight: '600',
-    color: 'var(--text-primary)'
-  },
-  shareFooter: {
-    fontSize: '10px',
-    color: 'var(--text-muted)',
-    textAlign: 'center',
-    marginTop: '8px',
-    borderTop: '1px solid var(--border-subtle)',
-    paddingTop: '8px'
-  },
-  weakTipsList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px'
-  },
-  tipCard: {
-    padding: '16px !important',
-    backgroundColor: 'var(--bg-secondary)',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px'
-  },
-  tipText: {
-    fontSize: '12px',
-    color: 'var(--text-primary)',
-    lineHeight: '1.4'
-  },
-  tableScroll: {
-    overflowX: 'auto',
-    width: '100%'
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    textAlign: 'left'
-  },
-  tableRowHeader: {
-    borderBottom: '1px solid var(--border-default)'
-  },
-  th: {
-    padding: '10px 12px',
-    fontSize: '11px',
-    fontWeight: '700',
-    color: 'var(--text-secondary)',
-    textTransform: 'uppercase'
-  },
-  tr: {
-    borderBottom: '1px solid var(--border-subtle)',
-    ':hover': {
-      backgroundColor: 'var(--bg-secondary)'
-    }
-  },
-  td: {
-    padding: '12px',
-    fontSize: '12px',
-    color: 'var(--text-primary)',
-    whiteSpace: 'nowrap'
-  },
-  configTabsRow: {
-    display: 'flex',
-    borderBottom: '1px solid var(--border-subtle)',
-    marginBottom: '20px',
-    gap: '24px'
-  },
-  configTabBtn: {
-    background: 'none',
-    border: 'none',
-    padding: '12px 4px',
-    cursor: 'pointer',
-    fontWeight: '700',
-    fontSize: '14px',
-    letterSpacing: '0.5px'
-  },
-  simSelectorGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '16px',
-    margin: '16px 0'
-  },
-  simCard: {
-    padding: '16px',
-    borderRadius: '12px',
-    backgroundColor: 'var(--bg-secondary)',
-    cursor: 'pointer',
-    display: 'flex',
-    flexDirection: 'column',
-    transition: 'all 0.2s'
-  },
-  chapterHelperRow: {
-    display: 'flex',
-    gap: '12px',
-    marginBottom: '8px'
-  },
-  ghostLink: {
-    padding: '4px 8px',
-    fontSize: '11px',
-    color: 'var(--accent-hover)',
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer'
-  },
-  chaptersScrollContainer: {
-    maxHeight: '200px',
-    overflowY: 'auto',
-    border: '1px solid var(--border-subtle)',
-    borderRadius: '12px',
-    padding: '12px',
-    backgroundColor: 'var(--bg-secondary)',
+    padding: '10px 16px 6px',
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
-    marginBottom: '16px'
+    borderBottom: '1px solid var(--border-subtle)',
+    backgroundColor: 'var(--bg-primary)',
   },
-  chapterCheckboxLabel: {
-    display: 'flex',
-    alignItems: 'center',
-    cursor: 'pointer',
-    userSelect: 'none'
-  },
-  configControlsGrid: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-    margin: '16px 0'
-  },
-  controlGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px'
-  },
-  controlLabel: {
-    fontSize: '12px',
-    fontWeight: '600',
-    color: 'var(--text-secondary)'
-  },
-  optionsRowPills: {
-    display: 'flex',
-    gap: '8px',
-    flexWrap: 'wrap'
-  },
-  pillBtn: {
-    padding: '6px 16px',
-    borderRadius: '20px',
-    border: '1px solid var(--border-default)',
-    cursor: 'pointer',
-    fontSize: '12px',
-    fontWeight: '600',
-    transition: 'all 0.15s'
-  },
-  optionRowCustom: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: '12px',
-    borderTop: '1px solid var(--border-subtle)'
-  },
-  progressBarContainer: {
-    width: '100%',
-    height: '8px',
-    backgroundColor: 'var(--bg-elevated)',
-    borderRadius: '4px',
-    overflow: 'hidden'
-  },
-  progressBarFiller: {
-    height: '100%',
-    backgroundColor: 'var(--accent)',
-    borderRadius: '4px',
-    transition: 'width 0.3s ease'
-  }
 };

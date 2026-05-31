@@ -28,6 +28,195 @@ function renderKatex(math, displayMode = false) {
   }
 }
 
+// Wrap bare LaTeX commands in $ delimiters so parseLaTeX can handle them
+function wrapBareLatex(text) {
+  if (!text || typeof text !== 'string') return text;
+  let s = text;
+
+  // Protect existing $...$ and $$...$$ blocks with placeholders
+  const placeholders = [];
+  s = s.replace(/(\$\$[\s\S]*?\$\$|\$[^$]+\$)/g, (match) => {
+    const idx = placeholders.length;
+    placeholders.push(match);
+    return `__PH${idx}__`;
+  });
+
+  // Protect inline \(...\) blocks
+  s = s.replace(/(\\\([\s\S]*?\\\))/g, (match) => {
+    const idx = placeholders.length;
+    placeholders.push(match);
+    return `__PH${idx}__`;
+  });
+
+  // Wrap bare \command{...} patterns (with nested braces support)
+  s = s.replace(/\\(frac|sqrt|vec|hat|bar|dot|overline|underline|text|mathrm|mathbf|operatorname)\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}/g, (match) => `$${match}$`);
+
+  // Wrap bare \command followed by single letter (no braces)
+  s = s.replace(/\\(vec|hat|bar|dot|ddot|tilde)\s*([a-zA-Z])/g, '$\\$1{$2}$');
+
+  // Wrap Greek letters and symbols that appear bare
+  s = s.replace(/\\(alpha|beta|gamma|delta|epsilon|theta|lambda|mu|pi|sigma|omega|phi|psi|chi|rho|tau|nu|xi|zeta|eta|iota|kappa|Delta|Gamma|Theta|Lambda|Xi|Pi|Sigma|Upsilon|Phi|Psi|Omega|infty|partial|nabla|rightarrow|leftarrow|leftrightarrow|cdot|times|div|pm|mp|leq|geq|neq|approx|equiv|sim|propto|subset|supset|cap|cup|forall|exists|neg|perp|parallel|angle)(?![a-zA-Z])/g, '$\\$1$');
+
+  // Wrap display equations \[...\]
+  s = s.replace(/\\\[([\s\S]*?)\\\]/g, (_, eq) => `$$${eq.trim()}$$`);
+
+  // Restore placeholders
+  s = s.replace(/__PH(\d+)__/g, (_, idx) => placeholders[parseInt(idx)]);
+
+  return s;
+}
+
+// Convert markdown to React elements with LaTeX rendering
+export function parseRichContent(text) {
+  if (!text || typeof text !== 'string') return text;
+
+  // Normalize ALL forms of newlines to actual line breaks
+  let processed = text
+    .replace(/\\n/g, '\n')       // literal \n (backslash + n) → actual newline
+    .replace(/\\r\\n/g, '\n')   // literal \r\n → actual newline
+    .replace(/\\r/g, '\n')      // literal \r → actual newline
+    .replace(/\r\n/g, '\n')     // actual \r\n → \n
+    .replace(/\r/g, '\n');      // actual \r → \n
+
+  // Protect existing $...$ blocks before any processing
+  const mathBlocks = [];
+  processed = processed.replace(/(\$\$[\s\S]*?\$\$|\$[^$]+\$)/g, (match) => {
+    const idx = mathBlocks.length;
+    mathBlocks.push(match);
+    return `__MATH${idx}__`;
+  });
+
+  // Also protect \(...\) inline math
+  processed = processed.replace(/(\\\([\s\S]*?\\\))/g, (match) => {
+    const idx = mathBlocks.length;
+    mathBlocks.push(match);
+    return `__MATH${idx}__`;
+  });
+
+  // Convert markdown structure to HTML markers
+  processed = processed.replace(/^### (.+)$/gm, '<h5>$1</h5>');
+  processed = processed.replace(/^## (.+)$/gm, '<h4>$1</h4>');
+  processed = processed.replace(/^# (.+)$/gm, '<h3>$1</h3>');
+  processed = processed.replace(/^> (.+)$/gm, '<quote>$1</quote>');
+
+  // Restore math blocks
+  processed = processed.replace(/__MATH(\d+)__/g, (_, idx) => mathBlocks[parseInt(idx)]);
+
+  // Wrap bare LaTeX commands
+  processed = wrapBareLatex(processed);
+
+  // Now split into lines and build elements
+  const lines = processed.split('\n');
+  const elements = [];
+  let listItems = [];
+
+  const flushList = () => {
+    if (listItems.length > 0) {
+      elements.push(
+        <ul key={`ul-${elements.length}`} style={{ margin: '4px 0 8px 0', paddingLeft: '20px' }}>
+          {listItems.map((item, i) => (
+            <li key={i} style={{ marginBottom: '3px', lineHeight: '1.6', fontSize: '13px' }}>
+              {parseInlineContent(item)}
+            </li>
+          ))}
+        </ul>
+      );
+      listItems = [];
+    }
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      flushList();
+      continue;
+    }
+
+    // List items: - or * or 1.
+    if (/^[-*]\s/.test(trimmed) || /^\d+\.\s/.test(trimmed)) {
+      const itemText = trimmed.replace(/^[-*]\s+/, '').replace(/^\d+\.\s+/, '');
+      listItems.push(itemText);
+      continue;
+    }
+
+    flushList();
+
+    // Headers
+    if (trimmed.startsWith('<h3>') || trimmed.startsWith('<h4>') || trimmed.startsWith('<h5>')) {
+      const content = trimmed.replace(/<\/?h[345]>/g, '');
+      elements.push(
+        <div key={`h-${elements.length}`} style={{ marginTop: '12px', marginBottom: '4px' }}>
+          {parseInlineContent(content)}
+        </div>
+      );
+      continue;
+    }
+
+    // Blockquotes
+    if (trimmed.startsWith('<quote>')) {
+      const content = trimmed.replace(/<\/?quote>/g, '');
+      elements.push(
+        <div key={`q-${elements.length}`} style={{
+          borderLeft: '2px solid var(--accent)',
+          paddingLeft: '12px',
+          margin: '6px 0',
+          color: 'var(--text-secondary)',
+          fontStyle: 'italic',
+          fontSize: '13px'
+        }}>
+          {parseInlineContent(content)}
+        </div>
+      );
+      continue;
+    }
+
+    // Regular paragraph
+    elements.push(
+      <div key={`p-${elements.length}`} style={{ marginBottom: '4px', lineHeight: '1.6', fontSize: '13px' }}>
+        {parseInlineContent(trimmed)}
+      </div>
+    );
+  }
+
+  flushList();
+
+  if (elements.length === 0) return text;
+  return <>{elements}</>;
+}
+
+// Parse a single line that may contain bold text (markdown or HTML) and LaTeX
+function parseInlineContent(text) {
+  if (!text) return text;
+
+  // First, convert markdown bold **...** to <strong>...</strong>
+  let s = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+  // Now split on <strong>...</strong> tags and process each part
+  const parts = [];
+  const tagRegex = /<strong>([\s\S]*?)<\/strong>/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = tagRegex.exec(s)) !== null) {
+    // Text before the tag
+    if (match.index > lastIndex) {
+      parts.push(parseLaTeX(s.substring(lastIndex, match.index)));
+    }
+    // Bold content
+    parts.push(<strong key={`b-${parts.length}`} style={{ fontWeight: '700' }}>{parseLaTeX(match[1])}</strong>);
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Remaining text after last tag
+  if (lastIndex < s.length) {
+    parts.push(parseLaTeX(s.substring(lastIndex)));
+  }
+
+  if (parts.length === 0) return parseLaTeX(s);
+  if (parts.length === 1) return parts[0];
+  return <>{parts}</>;
+}
+
 export default function DailyChallenge() {
   const navigate = useNavigate();
   const [isCompletedToday, setIsCompletedToday] = useState(false);
@@ -153,12 +342,6 @@ export function parseLaTeX(text) {
   
   // Wrap multiple elements in a fragment
   return <>{elements.map((el, i) => (typeof el === 'string' ? <span key={`txt-${i}`}>{el}</span> : el))}</>;
-}
-
-function getSubjectColor(subject) {
-  if (subject === 'physics') return 'var(--accent)';
-  if (subject === 'chemistry') return 'var(--success)';
-  return 'var(--warning)';
 }
 
 const styles = {

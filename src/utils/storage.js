@@ -291,5 +291,21 @@ export const storage = {
     const keys = Object.keys(localStorage).filter(k => k.startsWith('jeeforge_'));
     keys.forEach(k => localStorage.removeItem(k));
     console.log(`[Nexus JEE] Reset ${keys.length} keys`);
-  }
+  },
+
+  // AI Provider Configuration
+  getAIProvider: () => localStorage.getItem('jeeforge_ai_provider') || '',
+  setAIProvider: (provider) => localStorage.setItem('jeeforge_ai_provider', provider),
+
+  getAIApiKey: () => localStorage.getItem('jeeforge_ai_api_key') || '',
+  setAIApiKey: (key) => localStorage.setItem('jeeforge_ai_api_key', key),
+
+  getAIModel: () => localStorage.getItem('jeeforge_ai_model') || '',
+  setAIModel: (model) => localStorage.setItem('jeeforge_ai_model', model),
+
+  hasValidAIConfig: () => {
+    const provider = localStorage.getItem('jeeforge_ai_provider');
+    const key = localStorage.getItem('jeeforge_ai_api_key');
+    return !!(provider && key);
+  },
 };

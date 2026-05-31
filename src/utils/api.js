@@ -1,7 +1,6 @@
 import { logger } from './logger';
+import { storage } from './storage';
 
-const BASE_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const MODEL = 'openrouter/owl-alpha';
 const SYSTEM_PROMPT = `You are Nexus JEE's AI tutor — a precise, strict, expert JEE Mains teacher. 
 You generate perfectly calibrated JEE questions and explanations. 
 You ALWAYS respond in valid JSON only. No markdown, no explanation outside JSON, 
@@ -11,6 +10,34 @@ CRITICAL LaTeX RULES:
 2. Never write unbraced commands like \\textm, \\textcm, \\textkg, \\texts. Always write: \\text{m}, \\text{cm}, \\text{kg}, \\text{s}.
 3. Always escape all backslashes as double backslashes (\\\\) inside the JSON strings.`;
 
+// Provider configurations
+const PROVIDERS = {
+  openrouter: {
+    name: 'OpenRouter',
+    baseUrl: 'https://openrouter.ai/api/v1/chat/completions',
+    model: 'openrouter/owl-alpha',
+    format: 'openai',
+  },
+  openai: {
+    name: 'OpenAI',
+    baseUrl: 'https://api.openai.com/v1/chat/completions',
+    model: 'gpt-4o',
+    format: 'openai',
+  },
+  anthropic: {
+    name: 'Anthropic',
+    baseUrl: 'https://api.anthropic.com/v1/messages',
+    model: 'claude-sonnet-4-20250514',
+    format: 'anthropic',
+  },
+  gemini: {
+    name: 'Google Gemini',
+    baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/',
+    model: 'gemini-2.0-flash',
+    format: 'gemini',
+  },
+};
+
 // In-flight requests map to handle deduplication
 const inFlightRequests = new Map();
 
@@ -18,87 +45,164 @@ export class APIError extends Error {
   constructor(type, original) {
     super(original?.message || type);
     this.type = type;
-    this.original = original;
   }
 }
 
+export { PROVIDERS };
 
-// LaTeX JSON sanitization — double ALL single backslashes before letters
-// so they survive JSON.parse (which eats \t, \n, \f, \r, \b etc.)
+// LaTeX JSON sanitization
 function sanitizeLaTeXJson(jsonString) {
   let sanitized = jsonString;
-
-  // Step 1: Fix unbraced \text commands BEFORE doubling
-  // \textm -> \text{m} (single backslash in raw JSON)
   sanitized = sanitized.replace(/\\text([a-zA-Z]+)/g, '\\text{$1}');
-  // \vecF -> \vec{F}
   sanitized = sanitized.replace(/\\vec([a-zA-Z]+)/g, '\\vec{$1}');
-
-  // Step 2: Double ALL single backslashes before any letter
-  // This covers \frac, \sin, \cos, \sqrt, \hat, \partial, \sum, \int, \infty, etc.
-  // Negative lookbehind ensures we don't double already-doubled backslashes
-  sanitized = sanitized.replace(/(?<!\\)\\([a-zA-Z])/g, '\\\\$1');
-
+  const latexCommands = 'frac|sqrt|sin|cos|tan|sec|csc|cot|log|ln|exp|lim|sum|prod|int|infty|partial|nabla|vec|hat|bar|dot|ddot|tilde|overline|underline|alpha|beta|gamma|delta|epsilon|theta|lambda|mu|pi|sigma|omega|phi|psi|chi|rho|tau|nu|xi|zeta|eta|iota|kappa|Delta|Gamma|Theta|Lambda|Xi|Pi|Sigma|Upsilon|Phi|Psi|Omega|rightarrow|leftarrow|leftrightarrow|Rightarrow|Leftarrow|Leftrightarrow|cdot|times|div|pm|mp|circ|leq|geq|neq|approx|equiv|sim|propto|subset|supset|subseteq|supseteq|in|notin|cup|cap|emptyset|forall|exists|neg|land|lor|implies|perp|parallel|angle';
+  const re = new RegExp(`(?<!\\\\)(?<!\\")\\\\(${latexCommands})`, 'g');
+  sanitized = sanitized.replace(re, '\\\\$1');
   return sanitized;
 }
 
-// Low-level fetch function with timeout and authorization
-async function fetchAI(systemPrompt, userPrompt) {
-  const apiKey = import.meta.env.VITE_OPENROUTER_KEY || '';
-  if (!apiKey) {
-    throw new APIError('auth', new Error('No API key found. Set VITE_OPENROUTER_KEY in your .env file'));
-  }
+// Parse response text to JSON
+function parseAIResponse(text) {
+  const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
+  const sanitized = sanitizeLaTeXJson(cleaned);
+  return JSON.parse(sanitized);
+}
 
-  const response = await fetch(BASE_URL, {
+// Fetch from OpenAI-compatible APIs (OpenRouter, OpenAI)
+async function fetchOpenAICompatible(baseUrl, apiKey, model, systemPrompt, userPrompt) {
+  const response = await fetch(baseUrl, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://nexusjee.app',
-      'X-Title': 'Nexus JEE'
+      ...(baseUrl.includes('openrouter') ? { 'HTTP-Referer': 'https://nexusjee.app', 'X-Title': 'Nexus JEE' } : {}),
     },
     body: JSON.stringify({
-      model: MODEL,
+      model,
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
+        { role: 'user', content: userPrompt },
       ],
       response_format: { type: 'json_object' },
       temperature: 0.7,
-      max_tokens: 1500
-    })
+      max_tokens: 1500,
+    }),
   });
 
   if (!response.ok) {
     const text = await response.text().catch(() => '');
     const msg = text.toLowerCase();
     if (response.status === 429 || msg.includes('rate limit') || msg.includes('quota')) {
-      throw new APIError('rate_limit', new Error(`OpenRouter 429: ${text}`));
+      throw new APIError('rate_limit', new Error(`Rate limit: ${text}`));
     }
     if (response.status === 401 || response.status === 403) {
-      throw new APIError('auth', new Error(`OpenRouter Authorization Error: ${text}`));
+      throw new APIError('auth', new Error(`Auth error: ${text}`));
     }
-    throw new APIError('unknown', new Error(`OpenRouter Error ${response.status}: ${text}`));
+    throw new APIError('unknown', new Error(`API error ${response.status}: ${text}`));
   }
 
   const data = await response.json();
-  const text = data.choices?.[0]?.message?.content;
-  if (!text) {
-    throw new APIError('parse', new Error('Empty choice content returned from OpenRouter'));
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new APIError('parse', new Error('Empty response'));
+  return parseAIResponse(content);
+}
+
+// Fetch from Anthropic
+async function fetchAnthropic(apiKey, model, systemPrompt, userPrompt) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 1500,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    const msg = text.toLowerCase();
+    if (response.status === 429 || msg.includes('rate limit') || msg.includes('quota')) {
+      throw new APIError('rate_limit', new Error(`Rate limit: ${text}`));
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw new APIError('auth', new Error(`Auth error: ${text}`));
+    }
+    throw new APIError('unknown', new Error(`API error ${response.status}: ${text}`));
   }
 
-  // Strip markdown code fences if present (robust parser fallback)
-  const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
+  const data = await response.json();
+  const content = data.content?.[0]?.text;
+  if (!content) throw new APIError('parse', new Error('Empty response'));
+  return parseAIResponse(content);
+}
 
-  // Run our LaTeX backslash parser sanitizer
-  const sanitized = sanitizeLaTeXJson(cleaned);
+// Fetch from Google Gemini
+async function fetchGemini(apiKey, model, systemPrompt, userPrompt) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-  try {
-    const parsed = JSON.parse(sanitized);
-    return parsed;
-  } catch (parseErr) {
-    logger.error('JSON parse error from raw response text', parseErr);
-    throw new APIError('parse', parseErr);
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 1500,
+        responseMimeType: 'application/json',
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    const msg = text.toLowerCase();
+    if (response.status === 429 || msg.includes('rate limit') || msg.includes('quota')) {
+      throw new APIError('rate_limit', new Error(`Rate limit: ${text}`));
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw new APIError('auth', new Error(`Auth error: ${text}`));
+    }
+    throw new APIError('unknown', new Error(`API error ${response.status}: ${text}`));
+  }
+
+  const data = await response.json();
+  const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!content) throw new APIError('parse', new Error('Empty response'));
+  return parseAIResponse(content);
+}
+
+// Main fetch function — routes to correct provider
+async function fetchAI(systemPrompt, userPrompt) {
+  const provider = storage.getAIProvider();
+  const apiKey = storage.getAIApiKey();
+
+  if (!provider || !apiKey) {
+    throw new APIError('auth', new Error('No AI provider configured. Please set up your API key in Settings.'));
+  }
+
+  const config = PROVIDERS[provider];
+  if (!config) {
+    throw new APIError('auth', new Error(`Unknown provider: ${provider}`));
+  }
+
+  const model = storage.getAIModel() || config.model;
+  logger.log(`Calling ${config.name} (${model})...`);
+
+  switch (config.format) {
+    case 'openai':
+      return fetchOpenAICompatible(config.baseUrl, apiKey, model, systemPrompt, userPrompt);
+    case 'anthropic':
+      return fetchAnthropic(apiKey, model, systemPrompt, userPrompt);
+    case 'gemini':
+      return fetchGemini(apiKey, model, systemPrompt, userPrompt);
+    default:
+      throw new APIError('auth', new Error(`Unsupported provider format: ${config.format}`));
   }
 }
 

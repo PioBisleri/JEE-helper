@@ -65,7 +65,9 @@ export function UserProvider({ children }) {
 
     // Compile comprehensive stats
     const totalAttempted = activeSessions.reduce((sum, s) => sum + (s.attempted || 0), 0);
-    const weeklyTestHistory = activeWeekly.testHistory?.map(h => h.score) || [];
+    const totalCorrect = activeSessions.reduce((sum, s) => sum + (s.solvedClean || 0), 0);
+    const weeklyTestHistory = activeWeekly.testHistory || [];
+    const overallAccuracy = totalAttempted > 0 ? Math.round((totalCorrect / totalAttempted) * 100) : 0;
     
     // Check late/early studying
     let studiedLate = false;
@@ -78,23 +80,21 @@ export function UserProvider({ children }) {
       }
     });
 
-    // Check physics / chemistry completions
+    // Check physics / chemistry / math completions
     const pChapters = storage.getProgress();
-    // A chapter is completed if student master all concepts (simplified logic based on concept counts or completed chapter trackers)
-    const completedChaptersCount = Object.keys(pChapters).filter(id => {
-      const prog = pChapters[id];
-      return prog.completed || false;
-    }).length;
-
+    const completedChaptersCount = Object.keys(pChapters).filter(id => pChapters[id].completed).length;
     const completedPhysicsChapter = Object.keys(pChapters).some(id => id.startsWith('phy_') && pChapters[id].completed);
     const completedChemistryChapter = Object.keys(pChapters).some(id => id.startsWith('chem_') && pChapters[id].completed);
+    const completedMathChapter = Object.keys(pChapters).some(id => id.startsWith('math_') && pChapters[id].completed);
     const completedIntegrals = pChapters['math_09']?.completed || false;
+    const completedPhysicsChapters = Object.keys(pChapters).filter(id => id.startsWith('phy_') && pChapters[id].completed).length;
+    const completedChemistryChapters = Object.keys(pChapters).filter(id => id.startsWith('chem_') && pChapters[id].completed).length;
+    const completedMathChapters = Object.keys(pChapters).filter(id => id.startsWith('math_') && pChapters[id].completed).length;
 
-    // Track streaks
+    // Track clean streaks
     let maxCleanStreak = 0;
     let currentClean = 0;
     activeSessions.forEach(s => {
-      // simplified calculation of clean correct question streak
       if (s.solvedClean > 0) {
         currentClean += s.solvedClean;
         maxCleanStreak = Math.max(maxCleanStreak, currentClean);
@@ -103,18 +103,42 @@ export function UserProvider({ children }) {
       }
     });
 
+    // Notes count
+    const notes = storage.getNotes();
+    const notesCount = Object.keys(notes).length;
+
+    // Session stats
+    const totalSessions = activeSessions.length;
+    const longestSession = activeSessions.reduce((max, s) => Math.max(max, s.attempted || 0), 0);
+
+    // XP and level
+    const totalXp = storage.getXP();
+    const levelInfo = getLevelDetails(totalXp);
+
     const statsObj = {
       streak: activeStreak,
       bookmarksCount: activeBookmarks.length,
       totalAttempted,
-      weeklyTestHistory,
+      totalCorrect,
+      totalSessions,
+      longestSession,
+      overallAccuracy,
+      weeklyTestHistory: weeklyTestHistory.map(h => h.score),
       studiedLate,
       studiedEarly,
       completedChaptersCount,
       completedPhysicsChapter,
       completedChemistryChapter,
+      completedMathChapter,
       completedIntegrals,
+      completedPhysicsChapters,
+      completedChemistryChapters,
+      completedMathChapters,
       maxCleanStreak,
+      notesCount,
+      totalXp,
+      level: levelInfo.levelNumber,
+      totalAchievementsUnlocked: activeAchievements.length,
       ...customStats
     };
 

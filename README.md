@@ -1,110 +1,142 @@
 <div align="center">
 
-# 🔥 JEE Forge
+# Nexus JEE
 
-**Learn JEE by solving, not reading.**
-
-AI-powered JEE Mains study helper that generates chapter-wise questions, scaffolds you down to first principles when stuck, tracks every concept you learn, and tests you weekly.
+**AI-Powered JEE Mains Preparation Platform**
 
 [![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-8-646cff?style=flat-square&logo=vite&logoColor=white)](https://vite.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06b6d4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![OpenRouter](https://img.shields.io/badge/OpenRouter-owl--alpha-6366f1?style=flat-square&logo=openrouter&logoColor=white)](https://openrouter.ai/)
+[![KaTeX](https://img.shields.io/badge/KaTeX-0.17-ffffff?style=flat-square&logo=katex&logoColor=black)](https://katex.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
 </div>
 
 ---
 
-## ✨ Features
+## About
 
-### 🧠 Smart Question Generation
-Every question is generated live by the AI model, tailored to your current chapter, difficulty level, and previously learned concepts. No two students get the same experience.
-
-### 🪜 Scaffold Loop — Never Stay Stuck
-When you get a question wrong, JEE Forge doesn't just give you the answer. It walks you down:
-
-1. **Hint** — a nudge in the right direction
-2. **Simpler question** — isolates the concept you're missing
-3. **Concept explanation** — analogy, common mistake, JEE connection
-4. **Concept ladder** — 5 rungs from Class 9 basics to the advanced topic
-
-### 🔄 Spaced Repetition
-Concepts you learn are scheduled for review at increasing intervals (1, 3, 7, 14 days). The app surfaces due reviews before each study session so nothing slips.
-
-### 📝 Weekly Tests
-Every week (after 5+ concepts learned), take a 10-question timed assessment. No hints. No scaffolds. Just you and the concepts. Results are graded, weak concepts are flagged, and your progress is tracked over time.
-
-### 📊 Stats & Predictions
-- Current and best study streaks
-- Predicted JEE score based on chapter progress
-- Mistake breakdown: Conceptual Gap vs Calculation Error vs Misread vs Distractor Trap
-- Concept cloud: green (mastered), yellow (due for review)
-- Weekly test score trends
-- Session history
-
-### 🎯 Mood-Aware Difficulty
-Tell the app how you're feeling:
-- 😤 **Focused** — normal JEE Mains difficulty
-- 😴 **Tired** — easier, more conceptual
-- 😰 **Stressed** — easiest, encouraging phrasing
+Nexus JEE is a fully client-side AI tutoring platform for JEE Mains preparation. It generates personalized questions in real-time, scaffolds students through difficult concepts, tracks learning milestones, and provides comprehensive performance analytics. No backend required — all data persists in the browser via `localStorage`.
 
 ---
 
-## 🏗️ Architecture
+## Key Features
 
-```
-┌──────────────────────────────────────────────┐
-│                   JEE Forge                  │
-├─────────────┬──────────────┬─────────────────┤
-│   React 19  │  Tailwind v4 │  React Router 6 │
-│  Components │  Dark Theme  │   5 Routes      │
-├─────────────┴──────────────┴─────────────────┤
-│              localStorage (zero backend)      │
-│  Progress · Concepts · Sessions · Streaks     │
-├──────────────────────────────────────────────┤
-│           OpenRouter AI API                │
-│  Questions · Hints · Scaffolds · Tests       │
-└──────────────────────────────────────────────┘
-```
+### AI-Generated Content
+- **Real-time question generation** — every question is unique, tailored to chapter, difficulty, and student progress
+- **14 specialized AI prompt functions** — questions, scaffolds, hints, summaries, test papers, and more
+- **Request deduplication** and **automatic retries** with exponential backoff
 
-**28 source files · ~2,500 lines · zero backend dependencies**
+### Adaptive Scaffolding
+When a student answers incorrectly, the system provides four progressive support levels:
+
+1. **Simplified Question** — isolates the missed concept
+2. **Concept Explanation** — analogy, worked example, common mistakes
+3. **Concept Ladder** — 5-rung progression from fundamentals to advanced
+4. **Worked Solution** — full step-by-step derivation
+
+### Spaced Repetition
+Scheduled reviews at 1, 3, 7, and 14-day intervals. Due reviews surface before each session to reinforce long-term retention.
+
+### Full Syllabus Coverage
+
+| Subject | Chapters |
+|---------|----------|
+| Physics | 15 |
+| Chemistry | 12 |
+| Mathematics | 15 |
+| **Total** | **42** |
+
+Each chapter includes 4–10 progressive difficulty steps with curated subtopics.
+
+### Mock Exams & Practice
+- **Full JEE simulation** — 75 questions, 180 minutes, zero hints
+- **Single-subject mocks** — Physics, Chemistry, or Mathematics
+- **Custom practice** — configurable question count, difficulty, and chapter selection
+
+### Performance Analytics
+- Projected JEE score based on solving accuracy
+- Mistake DNA — categorized error analysis (conceptual, calculation, misread, distractor)
+- Activity heatmap, concept map, chapter mastery charts
+- Weekly test trends and session replays
+
+### Gamification
+- **XP & Leveling** — 6 progression tiers from JEE Aspirant to JEE Legend
+- **15 achievement badges** — streaks, speed solving, perfect scores, consistency
+- **Daily challenges** — 30-question assessments weighted toward weak areas
 
 ---
 
-## 🚀 Quick Start
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | React 19 |
+| Build | Vite 8 |
+| Styling | Tailwind CSS 4 |
+| Routing | React Router 6 |
+| Charts | Recharts |
+| Math Rendering | KaTeX |
+| Animations | Framer Motion |
+| AI Backend | OpenRouter API |
+| Visualizations | Python Manim |
+
+---
+
+## Project Structure
+
+```
+nexus-jee/
+├── src/
+│   ├── main.jsx                    # Entry point
+│   ├── App.jsx                     # Router, layout, navigation
+│   ├── index.css                   # Design system, global styles
+│   ├── data/                       # Chapters, formulas, achievements
+│   ├── utils/                      # API, storage, spaced repetition
+│   ├── components/                 # 25 reusable UI components
+│   └── pages/                      # 9 route components
+├── manim/                          # Python Manim animation source
+│   ├── physics/                    # 15 chapter scripts
+│   ├── maths/                      # 15 chapter scripts
+│   └── chemistry/                  # 12 chapter scripts
+├── public/animations/              # 128 pre-rendered .webm files
+├── .env                            # API key (gitignored)
+└── package.json
+```
+
+---
+
+## Getting Started
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) 18+
-- A free [OpenRouter API key](https://openrouter.ai/keys)
+- [OpenRouter API key](https://openrouter.ai/keys)
 
 ### Installation
 
 ```bash
 git clone <repository-url>
-cd jeeforge
-npm install --legacy-peer-deps
+cd nexus-jee
+npm install
 ```
 
-### Configure
+### Configuration
 
-Create a `.env` file in the project root:
+Create a `.env` file:
 
 ```env
-VITE_OPENROUTER_KEY=your_openrouter_api_key_here
+VITE_OPENROUTER_KEY=your_api_key_here
 ```
 
-> **No API key?** Get one free at [OpenRouter](https://openrouter.ai/keys). The free tier is fully sufficient for personal use.
-
-### Run
+### Development
 
 ```bash
 npm run dev
 ```
 
-Open the URL Vite prints (usually `http://localhost:5173`).
+Open `http://localhost:5173`.
 
-### Build for Production
+### Production Build
 
 ```bash
 npm run build
@@ -113,138 +145,87 @@ npm run preview
 
 ---
 
-## 📁 Project Structure
+## Study Flow
+
+The study session follows a 9-phase state machine:
 
 ```
-jeeforge/
-├── src/
-│   ├── main.jsx                    # React entry point
-│   ├── App.jsx                     # Router — 5 routes, onboarding gate
-│   ├── index.css                   # Tailwind v4 + theme tokens + animations
-│   │
-│   ├── data/
-│   │   └── chapters.js             # Complete JEE syllabus (42 chapters)
-│   │
-│   ├── utils/
-│   │   ├── storage.js              # localStorage wrapper — all persistence
-│   │   ├── api.js                  # 9 AI functions (OpenRouter)
-│   │   ├── spaceRepetition.js      # SM-2 style review intervals
-│   │   └── notifications.js        # Browser daily reminder notifications
-│   │
-│   ├── components/
-│   │   ├── QuestionCard.jsx        # Question display + option buttons
-│   │   ├── OptionButton.jsx        # State-aware answer button
-│   │   ├── ScaffoldPanel.jsx       # Reusable scaffold question UI
-│   │   ├── ConceptLadder.jsx       # First-principles stepper
-│   │   ├── ChapterSelector.jsx     # Chapter cards with progress
-│   │   ├── ProgressBar.jsx         # Visual progress indicator
-│   │   ├── MoodSelector.jsx        # Focused / Tired / Anxious
-│   │   ├── NotificationSetup.jsx   # Reminder permission + time picker
-│   │   ├── SessionSummary.jsx      # AI-generated session recap
-│   │   ├── WeeklyTest.jsx          # Test history + focus areas
-│   │   ├── LoadingSkeleton.jsx     # Animated skeleton placeholder
-│   │   └── ErrorState.jsx          # Error message with retry
-│   │
-│   └── pages/
-│       ├── Onboarding.jsx          # 3-step setup (name, exam date, reminders)
-│       ├── Home.jsx                # Dashboard — chapters, banners, countdown
-│       ├── Study.jsx               # Core experience — 7-phase state machine
-│       ├── TestPage.jsx            # Weekly 10-question timed assessment
-│       └── StatsPage.jsx           # Analytics — charts, predictions, history
-│
-├── .env                            # OpenRouter API key (gitignored)
-├── .gitignore
-├── index.html
-├── package.json
-└── vite.config.js
+Mood Selection → Spaced Reviews → Main Questions
+                                        │
+                                 ┌──────┴──────┐
+                                 ▼              ▼
+                             Correct          Wrong
+                                 │              │
+                                 ▼              ▼
+                           Next Question   Scaffold L1 → L2 → Ladder → Solution
+                                                              │
+                                                         ┌────┘
+                                                         ▼
+                                                   Back to Question
 ```
 
----
-
-## 🔑 Key Design Decisions
-
-### Zero Backend, Zero Setup
-Everything runs in the browser. Progress, concepts, streaks, sessions — all stored in `localStorage`. No database, no auth server, no deployment needed. Open the app and start studying.
-
-### Two Hard Rules
-1. **No component calls AI directly** — all AI calls go through `src/utils/api.js`
-2. **No component calls localStorage directly** — all persistence goes through `src/utils/storage.js`
-
-This keeps the UI layer pure and makes every data flow testable.
-
-### State Machine Study Flow
-The Study page is a strict 7-phase state machine:
-
-```
-mood → review? → question → correct → summary (every 5th) → question...
-                  ↓ wrong
-              hint
-                  ↓ still stuck
-              scaffold1 (simpler question)
-                  ↓ wrong
-              scaffold2 (concept explanation + analogy)
-                  ↓ still confused
-              ladder (5 rungs from basics to advanced)
-                  ↓ complete
-              back to scaffold2
-```
-
-No shortcuts allowed. Every phase transition is explicit.
+Every phase transition is explicit — no shortcuts.
 
 ---
 
-## 🛠️ Tech Stack
+## Data Persistence
 
-| Layer        | Technology            | Version |
-|--------------|----------------------|---------|
-| Framework    | React                 | 19.x    |
-| Bundler      | Vite                  | 8.x     |
-| Styling      | Tailwind CSS          | 4.x     |
-| Routing      | React Router          | 6.22.x  |
-| Charts       | Recharts              | 2.12.x  |
-| AI           | OpenRouter (owl-alpha)  | API   |
-| Storage      | localStorage          | Browser |
+All user data is stored in `localStorage` under the `jeeforge_` namespace:
 
----
-
-## 📚 JEE Syllabus Coverage
-
-| Subject    | Chapters |
-|------------|----------|
-| Physics    | 15       |
-| Chemistry  | 12       |
-| Math       | 15       |
-| **Total**  | **42**   |
-
-Each chapter contains:
-- `id` — unique identifier (e.g., `phy_01`)
-- `name` — chapter title
-- `subtopics[]` — 4-5 key subtopics
-- `difficulty_curve[]` — 6-10 progressive difficulty points
+| Domain | Key | Contents |
+|--------|-----|----------|
+| Progress | `jeeforge_progress` | Per-chapter metrics |
+| Concepts | `jeeforge_concepts` | Learned concepts with review scheduling |
+| Sessions | `jeeforge_sessions` | Study session logs |
+| Streak | `jeeforge_streak` | Current and longest streaks |
+| XP | `jeeforge_xp` | Total experience points |
+| Mistakes | `jeeforge_mistakes` | Error log with categorization |
+| Bookmarks | `jeeforge_bookmarks` | Saved questions |
+| Notes | `jeeforge_notes` | Per-concept revision notes |
+| Achievements | `jeeforge_achievements` | Unlocked badge IDs |
+| Weekly | `jeeforge_weekly` | Test history and weekly concepts |
 
 ---
 
-## 🤝 How to Contribute
+## XP Progression
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Make your changes and test: `npm run dev && npm run build`
-4. Commit: `git commit -m "Add: my feature"`
-5. Push: `git push origin feature/my-feature`
-6. Open a Pull Request
+| Level | Title | XP Required |
+|-------|-------|-------------|
+| 1 | JEE Aspirant | 0 |
+| 2 | Problem Solver | 500 |
+| 3 | Concept Crusher | 1,000 |
+| 4 | Formula Master | 1,500 |
+| 5 | JEE Warrior | 2,000 |
+| 6 | JEE Legend | 2,500+ |
 
 ---
 
-## 📄 License
+## Commands
 
-MIT — do whatever you want with it. Built for students, by someone who remembers what JEE prep feels like.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run preview` | Preview production build |
+| `npm run lint` | Run ESLint |
+| `cd manim && python render_all.py` | Render all Manim animations |
+
+---
+
+## Browser Support
+
+Chrome 90+, Firefox 88+, Safari 14+, Edge 90+. Requires `localStorage` and `fetch` API support.
+
+---
+
+## License
+
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
 <div align="center">
 
-**Made with frustration, caffeine, and the memory of solving problems at 2 AM.**
-
-⭐ Star this repo if it helped your prep.
+Built for students who learn by solving.
 
 </div>

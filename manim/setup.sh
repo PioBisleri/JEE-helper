@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== JEE Forge Manim Setup ==="
+echo "=== Nexus JEE Manim Setup ==="
 echo ""
 
 cd "$(dirname "$0")"

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-JEE Forge Manim - Master Render Script
+Nexus JEE Manim - Master Render Script
 Renders all animation scenes to .webm files and generates manifest.json.
 """
 
@@ -307,7 +307,7 @@ def generate_manifest(rendered_files):
 
 def main():
     print("=" * 60)
-    print("JEE Forge Manim - Master Render")
+    print("Nexus JEE Manim - Master Render")
     print("=" * 60)
     print()
 

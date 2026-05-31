@@ -1,1 +1,1 @@
-# JEE Forge Manim - Physics animations
+# Nexus JEE Manim - Physics animations

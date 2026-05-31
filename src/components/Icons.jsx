@@ -199,114 +199,120 @@ export const BookOpenIcon = (props) => (
   </IconWrapper>
 );
 
-// dynamic badge icons mapping
+// dynamic badge icons mapping — one unique icon per achievement
 export const BadgeIcon = ({ id, size = 32 }) => {
-  const color = 'var(--accent)';
-  
-  switch (id) {
-    case 'streak_7':
-      return (
-        <IconWrapper size={size} color="var(--warning)">
-          <path d="M12 2c-2.33 3.67-4 6.33-4 8.5a4 4 0 0 0 8 0c0-2.17-1.67-4.83-4-8.5z" />
-          <path d="M12 22a8 8 0 0 0 8-8c0-3.33-3-6-8-12-5 6-8 8.67-8 12a8 8 0 0 0 8 8z" />
-        </IconWrapper>
-      );
-    case 'streak_30':
-      return (
-        <IconWrapper size={size} color="var(--warning)">
-          <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-          <path d="M12 6v6l4 2" />
-        </IconWrapper>
-      );
-    case 'speed_solver':
-      return (
-        <IconWrapper size={size} color="#f59e0b">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-        </IconWrapper>
-      );
-    case 'ladder_climber':
-      return (
-        <IconWrapper size={size} color="#818cf8">
-          <path d="M6 20h12M6 16h12M6 12h12M6 8h12M6 4h12" strokeWidth="3" />
-          <line x1="6" y1="2" x2="6" y2="22" strokeWidth="3" />
-          <line x1="18" y1="2" x2="18" y2="22" strokeWidth="3" />
-        </IconWrapper>
-      );
-    case 'chapter_master':
-      return (
-        <IconWrapper size={size} color="var(--success)">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-          <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z" />
-        </IconWrapper>
-      );
-    case 'perfect_week':
-    case 'test_champion':
-      return (
-        <IconWrapper size={size} color="#f59e0b">
-          <circle cx="12" cy="12" r="10" />
-          <circle cx="12" cy="12" r="6" />
-          <circle cx="12" cy="12" r="2" />
-        </IconWrapper>
-      );
-    case 'night_owl':
-      return (
-        <IconWrapper size={size} color="#a855f7">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-        </IconWrapper>
-      );
-    case 'early_bird':
-      return (
-        <IconWrapper size={size} color="#f59e0b">
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-          <circle cx="12" cy="12" r="4" />
-        </IconWrapper>
-      );
-    case 'century':
-      return (
-        <IconWrapper size={size} color="var(--accent-hover)">
-          <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5" />
-          <text x="50%" y="62%" textAnchor="middle" stroke="none" fill="currentColor" fontSize="8" fontWeight="bold" fontFamily="var(--font-mono)">100</text>
-        </IconWrapper>
-      );
-    case 'chemist':
-      return (
-        <IconWrapper size={size} color="var(--success)">
-          <path d="M10 2h4M12 2v10M6 22h12L12 12 6 22z" />
-          <line x1="8.5" y1="18" x2="15.5" y2="18" />
-        </IconWrapper>
-      );
-    case 'integrator':
-      return (
-        <IconWrapper size={size} color="var(--warning)">
-          <path d="M16 4c-2 0-3 2-3 4v8c0 2-1 4-3 4M8 20c2 0 3-2 3-4V8c0-2 1-4 3-4" strokeWidth="2.5" />
-        </IconWrapper>
-      );
-    case 'physicist':
-      return (
-        <IconWrapper size={size} color="var(--accent)">
-          <ellipse cx="12" cy="12" rx="3" ry="9" transform="rotate(30 12 12)" />
-          <ellipse cx="12" cy="12" rx="3" ry="9" transform="rotate(90 12 12)" />
-          <ellipse cx="12" cy="12" rx="3" ry="9" transform="rotate(150 12 12)" />
-          <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-        </IconWrapper>
-      );
-    case 'independent':
-      return (
-        <IconWrapper size={size} color="var(--accent-hover)">
-          <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .3 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
-          <path d="M9 18h6M10 21h4" />
-        </IconWrapper>
-      );
-    case 'bookworm':
-      return (
-        <IconWrapper size={size} color="#818cf8">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v18H6.5a2.5 2.5 0 0 1-2.5-2.5" />
-          <path d="M6 6h10M6 10h10" />
-        </IconWrapper>
-      );
-    default:
-      return <TrophyIcon size={size} color={color} />;
-  }
+  const map = {
+    // Streaks
+    streak_3: { icon: FlameIcon, color: '#f97316' },
+    streak_7: { icon: FlameIcon, color: '#ef4444' },
+    streak_14: { icon: FireIcon, color: '#ef4444' },
+    streak_30: { icon: FireIcon, color: '#dc2626' },
+    streak_60: { icon: FireIcon, color: '#b91c1c' },
+    streak_90: { icon: CrownIcon, color: '#f59e0b' },
+    streak_180: { icon: CrownIcon, color: '#d97706' },
+    streak_365: { icon: DiamondIcon, color: '#8b5cf6' },
+    // Questions
+    q_10: { icon: LightningIcon, color: '#f59e0b' },
+    q_50: { icon: LightningIcon, color: '#f97316' },
+    century: { icon: CenturyIcon, color: '#6366f1' },
+    q_250: { icon: ZapIcon, color: '#f59e0b' },
+    q_500: { icon: ZapIcon, color: '#f97316' },
+    q_1000: { icon: RocketIcon, color: '#8b5cf6' },
+    q_2500: { icon: RocketIcon, color: '#6366f1' },
+    q_5000: { icon: InfinityIcon, color: '#ec4899' },
+    // XP
+    xp_100: { icon: StarIcon, color: '#f59e0b' },
+    xp_500: { icon: StarIcon, color: '#f97316' },
+    xp_1000: { icon: MedalIcon, color: '#f59e0b' },
+    xp_2500: { icon: MedalIcon, color: '#d97706' },
+    xp_5000: { icon: GemIcon, color: '#8b5cf6' },
+    xp_10000: { icon: DiamondIcon, color: '#ec4899' },
+    // Levels
+    level_2: { icon: ThunderIcon, color: '#22c55e' },
+    level_3: { icon: ThunderIcon, color: '#3b82f6' },
+    level_4: { icon: AwardIcon, color: '#f59e0b' },
+    level_5: { icon: ShieldIcon, color: '#ef4444' },
+    level_6: { icon: CrownIcon, color: '#f59e0b' },
+    // Tests
+    test_first: { icon: TestIcon, color: '#3b82f6' },
+    test_5: { icon: TestIcon, color: '#6366f1' },
+    test_10: { icon: AwardIcon, color: '#8b5cf6' },
+    test_25: { icon: TrophyIcon, color: '#f59e0b' },
+    perfect_week: { icon: TargetIcon, color: '#22c55e' },
+    test_champion: { icon: TrophyIcon, color: '#f59e0b' },
+    score_80: { icon: CrosshairIcon, color: '#22c55e' },
+    score_90: { icon: CrosshairIcon, color: '#3b82f6' },
+    // Chapters
+    chapter_master: { icon: BookIcon, color: '#22c55e' },
+    chapters_3: { icon: BookIcon, color: '#3b82f6' },
+    chapters_5: { icon: BookOpenIcon, color: '#6366f1' },
+    chapters_10: { icon: BookOpenIcon, color: '#8b5cf6' },
+    chapters_20: { icon: MountainIcon, color: '#f59e0b' },
+    all_chapters: { icon: TrophyIcon, color: '#f59e0b' },
+    physicist: { icon: AtomIcon, color: '#3b82f6' },
+    all_physics: { icon: AtomIcon, color: '#6366f1' },
+    chemist: { icon: FlaskIcon, color: '#22c55e' },
+    all_chemistry: { icon: FlaskIcon, color: '#10b981' },
+    mathematician: { icon: SigmaIcon, color: '#f59e0b' },
+    all_math: { icon: SigmaIcon, color: '#d97706' },
+    integrator: { icon: MathIcon, color: '#8b5cf6' },
+    // Clean solving
+    clean_5: { icon: CheckIcon, color: '#22c55e' },
+    clean_10: { icon: CheckIcon, color: '#10b981' },
+    clean_20: { icon: ShieldIcon, color: '#3b82f6' },
+    clean_50: { icon: ShieldIcon, color: '#6366f1' },
+    clean_100: { icon: CompassIcon, color: '#8b5cf6' },
+    // Speed
+    speed_solver: { icon: LightningIcon, color: '#f59e0b' },
+    speed_10: { icon: ZapIcon, color: '#f97316' },
+    speed_50: { icon: RocketIcon, color: '#ef4444' },
+    // Daily
+    daily_first: { icon: CalendarIcon, color: '#3b82f6' },
+    daily_7: { icon: CalendarIcon, color: '#6366f1' },
+    daily_30: { icon: AwardIcon, color: '#8b5cf6' },
+    daily_perfect: { icon: TrophyIcon, color: '#f59e0b' },
+    daily_25plus: { icon: TargetIcon, color: '#22c55e' },
+    // Sessions
+    session_first: { icon: BookOpenIcon, color: '#3b82f6' },
+    session_10: { icon: BookOpenIcon, color: '#6366f1' },
+    session_50: { icon: BrainIcon, color: '#8b5cf6' },
+    session_100: { icon: BrainIcon, color: '#a855f7' },
+    session_250: { icon: PuzzleIcon, color: '#ec4899' },
+    // Bookmarks & Notes
+    bookmark_1: { icon: BookOpenIcon, color: '#3b82f6' },
+    bookmark_10: { icon: BookOpenIcon, color: '#6366f1' },
+    bookmark_25: { icon: BookIcon, color: '#8b5cf6' },
+    bookmark_50: { icon: BookIcon, color: '#a855f7' },
+    note_first: { icon: NoteIcon, color: '#22c55e' },
+    note_10: { icon: NoteIcon, color: '#3b82f6' },
+    // Time
+    night_owl: { icon: MoonIcon, color: '#a855f7' },
+    early_bird: { icon: SunIcon, color: '#f59e0b' },
+    both_early_and_late: { icon: ClockIcon, color: '#6366f1' },
+    // Ladder
+    ladder_climber: { icon: LadderIcon, color: '#818cf8' },
+    ladder_10: { icon: MountainIcon, color: '#6366f1' },
+    // Accuracy
+    accuracy_50: { icon: TargetIcon, color: '#22c55e' },
+    accuracy_70: { icon: CrosshairIcon, color: '#3b82f6' },
+    accuracy_85: { icon: CrosshairIcon, color: '#6366f1' },
+    accuracy_95: { icon: ShieldIcon, color: '#8b5cf6' },
+    // Special
+    zero_mistakes_session: { icon: CheckIcon, color: '#22c55e' },
+    first_correct: { icon: CheckIcon, color: '#22c55e' },
+    correct_100: { icon: AwardIcon, color: '#3b82f6' },
+    correct_500: { icon: AwardIcon, color: '#8b5cf6' },
+    correct_1000: { icon: DiamondIcon, color: '#ec4899' },
+    marathon_session: { icon: HeartbeatIcon, color: '#ef4444' },
+    quiz_master: { icon: TrophyIcon, color: '#f59e0b' },
+    gate_crusher: { icon: KeyIcon, color: '#22c55e' },
+    gate_3: { icon: KeyIcon, color: '#f59e0b' },
+    all_achievements: { icon: CrownIcon, color: '#f59e0b' },
+  };
+
+  const entry = map[id] || { icon: TrophyIcon, color: 'var(--accent)' };
+  const Icon = entry.icon;
+  return <Icon size={size} color={entry.color} />;
 };
 
 export const TargetIcon = (props) => (
@@ -391,6 +397,13 @@ export const LightningIcon = (props) => (
   </IconWrapper>
 );
 
+export const ZapIcon = (props) => (
+  <IconWrapper {...props}>
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    <line x1="12" y1="2" x2="12" y2="6" />
+  </IconWrapper>
+);
+
 export const LadderIcon = (props) => (
   <IconWrapper {...props}>
     <line x1="8" y1="4" x2="8" y2="20" />
@@ -453,10 +466,153 @@ export const MicroscopeIcon = (props) => (
   </IconWrapper>
 );
 
+export const BrainIcon = (props) => (
+  <IconWrapper {...props}>
+    <path d="M9.5 2A5.5 5.5 0 0 0 4 7.5c0 1.58.67 3 1.74 4.01L12 16l6.26-4.49A5.49 5.49 0 0 0 20 7.5 5.5 5.5 0 0 0 14.5 2c-1.56 0-2.96.72-3.88 1.85A5.49 5.49 0 0 0 9.5 2z" />
+    <path d="M12 16v4" />
+    <path d="M8 20h8" />
+  </IconWrapper>
+);
+
 export const LightbulbIcon = (props) => (
   <IconWrapper {...props}>
     <path d="M9 18h6" />
     <path d="M10 22h4" />
     <path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" />
+  </IconWrapper>
+);
+
+export const MedalIcon = (props) => (
+  <IconWrapper {...props}>
+    <circle cx="12" cy="8" r="6" />
+    <path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12" />
+  </IconWrapper>
+);
+
+export const CrownIcon = (props) => (
+  <IconWrapper {...props}>
+    <path d="M2 4l3 12h14l3-12-5 4-5-4-5 4z" />
+    <line x1="5" y1="20" x2="19" y2="20" />
+  </IconWrapper>
+);
+
+export const ShieldIcon = (props) => (
+  <IconWrapper {...props}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+  </IconWrapper>
+);
+
+export const RocketIcon = (props) => (
+  <IconWrapper {...props}>
+    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+    <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+  </IconWrapper>
+);
+
+export const DiamondIcon = (props) => (
+  <IconWrapper {...props}>
+    <path d="M6 3h12l4 6-10 13L2 9z" />
+    <path d="M2 9h20" />
+    <path d="M12 22L6 9l6-6 6 6z" />
+  </IconWrapper>
+);
+
+export const GemIcon = (props) => (
+  <IconWrapper {...props}>
+    <path d="M6 3h12l4 6-10 13L2 9z" />
+    <path d="M11 3l-1.5 6L12 22" />
+    <path d="M13 3l1.5 6L12 22" />
+  </IconWrapper>
+);
+
+export const AwardIcon = (props) => (
+  <IconWrapper {...props}>
+    <circle cx="12" cy="8" r="7" />
+    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+  </IconWrapper>
+);
+
+export const CompassIcon = (props) => (
+  <IconWrapper {...props}>
+    <circle cx="12" cy="12" r="10" />
+    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+  </IconWrapper>
+);
+
+export const MountainIcon = (props) => (
+  <IconWrapper {...props}>
+    <path d="M8 3l4 8 5-5 5 15H2z" />
+  </IconWrapper>
+);
+
+export const CrosshairIcon = (props) => (
+  <IconWrapper {...props}>
+    <circle cx="12" cy="12" r="10" />
+    <line x1="22" y1="12" x2="18" y2="12" />
+    <line x1="6" y1="12" x2="2" y2="12" />
+    <line x1="12" y1="6" x2="12" y2="2" />
+    <line x1="12" y1="22" x2="12" y2="18" />
+  </IconWrapper>
+);
+
+export const InfinityIcon = (props) => (
+  <IconWrapper {...props}>
+    <path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.74-8z" />
+  </IconWrapper>
+);
+
+export const HeartIcon = (props) => (
+  <IconWrapper {...props}>
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+  </IconWrapper>
+);
+
+export const CalendarIcon = (props) => (
+  <IconWrapper {...props}>
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </IconWrapper>
+);
+
+export const AtomIcon = (props) => (
+  <IconWrapper {...props}>
+    <circle cx="12" cy="12" r="1" />
+    <path d="M20.2 20.2c2.04-2.03.02-7.36-4.5-11.9-4.54-4.52-9.87-6.54-11.9-4.5-2.04 2.03-.02 7.36 4.5 11.9 4.54 4.52 9.87 6.54 11.9 4.5z" />
+    <path d="M15.7 15.7c4.52-4.54 6.54-9.87 4.5-11.9-2.03-2.04-7.36-.02-11.9 4.5-4.52 4.54-6.54 9.87-4.5 11.9 2.03 2.04 7.36.02 11.9-4.5z" />
+  </IconWrapper>
+);
+
+export const SigmaIcon = (props) => (
+  <IconWrapper {...props}>
+    <path d="M18 4H6l6 8-6 8h12" />
+  </IconWrapper>
+);
+
+export const PuzzleIcon = (props) => (
+  <IconWrapper {...props}>
+    <path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.61a2.404 2.404 0 0 1-1.705.707 2.402 2.402 0 0 1-1.704-.706l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.23 8.77c.24-.24.581-.353.917-.303.515.077.877.528 1.073 1.01a2.5 2.5 0 1 0 3.259-3.259c-.482-.196-.933-.558-1.01-1.073-.05-.336.062-.676.303-.917l1.525-1.525A2.402 2.402 0 0 1 12 1.998c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02z" />
+  </IconWrapper>
+);
+
+export const KeyIcon = (props) => (
+  <IconWrapper {...props}>
+    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+  </IconWrapper>
+);
+
+export const FireIcon = (props) => (
+  <IconWrapper {...props}>
+    <path d="M12 2c.5 2.5 2 4.5 2 7a4 4 0 1 1-8 0c0-2.5 1.5-4.5 2-7 1 2 3 3 4 0z" />
+    <path d="M12 22c3 0 6-2.5 6-6 0-3-2-5-4-7-1 2-2 4-2 6a2 2 0 1 1-4 0c0-2-1-4-2-6-2 2-4 4-4 7 0 3.5 3 6 6 6z" />
+  </IconWrapper>
+);
+
+export const WaveIcon = (props) => (
+  <IconWrapper {...props}>
+    <path d="M2 12c1.5-3 3-4.5 4.5-4.5S9 9 10.5 12 13 16.5 14.5 16.5 18 15 19.5 12 22 7.5 22 12" />
   </IconWrapper>
 );

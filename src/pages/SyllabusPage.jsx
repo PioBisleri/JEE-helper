@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { storage } from '../utils/storage';
 import { CHAPTERS } from '../data/chapters';
 import { generateChapterSummary } from '../utils/api';
-import { parseLaTeX } from '../components/DailyChallenge';
+import { parseRichContent } from '../components/DailyChallenge';
 import { useToast } from '../components/ToastContext';
 import { useUser } from '../components/UserContext';
 import {
@@ -464,26 +464,26 @@ export default function SyllabusPage() {
                                       <div style={styles.summaryContent}>
                                         <div style={styles.summarySection}>
                                           <strong style={styles.summarySectionTitle}>Core Theory & Formulas:</strong>
-                                          <div style={styles.summarySectionText}>
-                                            {parseLaTeX(summariesCache[ch.id].summary)}
-                                          </div>
+                                        <div style={styles.summarySectionText} className="rich-content">
+                                          {parseRichContent(summariesCache[ch.id].summary)}
                                         </div>
-                                        
-                                        <div style={{ ...styles.summarySection, marginTop: '16px' }}>
-                                          <strong style={{ ...styles.summarySectionTitle, color: 'var(--warning)' }}>Traps & Common Pitfalls:</strong>
-                                          <div style={styles.summarySectionText}>
-                                            {parseLaTeX(summariesCache[ch.id].pitfalls)}
-                                          </div>
+                                      </div>
+                                      
+                                      <div style={{ ...styles.summarySection, marginTop: '16px' }}>
+                                        <strong style={{ ...styles.summarySectionTitle, color: 'var(--warning)' }}>Traps & Common Pitfalls:</strong>
+                                        <div style={styles.summarySectionText} className="rich-content">
+                                          {parseRichContent(summariesCache[ch.id].pitfalls)}
+                                        </div>
                                         </div>
 
                                         <div style={styles.prereqRow}>
                                           <div>
                                             <span style={styles.prereqLabel}>PREREQUISITES:</span>
-                                            <span style={styles.prereqVal}>{summariesCache[ch.id].prerequisites || 'None'}</span>
+                                            <span style={styles.prereqVal}>{parseRichContent(summariesCache[ch.id].prerequisites || 'None')}</span>
                                           </div>
                                           <div style={{ marginTop: '4px' }}>
                                             <span style={styles.prereqLabel}>NEXT CHAPTERS:</span>
-                                            <span style={styles.prereqVal}>{summariesCache[ch.id].nextChapters || 'General Progression'}</span>
+                                            <span style={styles.prereqVal}>{parseRichContent(summariesCache[ch.id].nextChapters || 'General Progression')}</span>
                                           </div>
                                         </div>
 

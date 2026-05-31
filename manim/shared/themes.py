@@ -1,4 +1,4 @@
-# JEE Forge Manim - Subject-Specific Color Palettes
+# Nexus JEE Manim - Subject-Specific Color Palettes
 # Each subject has its own visual language
 
 from manim import *

@@ -1,1 +1,1 @@
-# JEE Forge Manim - Shared utilities
+# Nexus JEE Manim - Shared utilities

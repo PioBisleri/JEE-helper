@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useUser } from '../components/UserContext';
 import { useToast } from '../components/ToastContext';
 import { storage } from '../utils/storage';
+import { PROVIDERS } from '../utils/api';
 import { SettingsIcon, TargetIcon, WarningIcon, InfoIcon, NoteIcon } from '../components/Icons';
 
 export default function Settings() {
@@ -20,6 +21,9 @@ export default function Settings() {
   const [localExamDate, setLocalExamDate] = useState(examDate);
   const [resetConfirm, setResetConfirm] = useState('');
   const [showWipeModal, setShowWipeModal] = useState(false);
+  const [aiProvider, setAiProvider] = useState(() => storage.getAIProvider());
+  const [aiKey, setAiKey] = useState(() => storage.getAIApiKey());
+  const [aiModel, setAiModel] = useState(() => storage.getAIModel());
 
   React.useEffect(() => {
     setLocalName(name);
@@ -80,6 +84,16 @@ export default function Settings() {
     }
   };
 
+  const handleAISave = () => {
+    if (!aiProvider) { showToast('Select a provider', 'error'); return; }
+    if (!aiKey.trim()) { showToast('Enter an API key', 'error'); return; }
+    storage.setAIProvider(aiProvider);
+    storage.setAIApiKey(aiKey.trim());
+    if (aiModel.trim()) storage.setAIModel(aiModel.trim());
+    else localStorage.removeItem('jeeforge_ai_model');
+    showToast('AI provider updated', 'success');
+  };
+
   return (
     <div style={styles.container} className="mx-auto p-6 max-w-3xl">
       <h2 style={{ ...styles.pageTitle, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -113,6 +127,58 @@ export default function Settings() {
             Save
           </button>
         </form>
+
+        {/* AI Provider Card */}
+        <div style={styles.card} className="card">
+          <h3 style={styles.sectionHeader}>AI Provider</h3>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 12px' }}>Configure which AI powers your questions and summaries.</p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+            {Object.entries(PROVIDERS).map(([id, p]) => (
+              <button
+                key={id}
+                onClick={() => setAiProvider(id)}
+                style={{
+                  padding: '10px 8px',
+                  borderRadius: 'var(--radius-md)',
+                  border: aiProvider === id ? '1.5px solid var(--accent)' : '1px solid var(--border-default)',
+                  backgroundColor: aiProvider === id ? 'var(--accent-dim)' : 'var(--bg-secondary)',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>{p.name}</span>
+              </button>
+            ))}
+          </div>
+
+          {aiProvider && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+              <label style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>API Key</label>
+              <input
+                type="password"
+                value={aiKey}
+                onChange={e => setAiKey(e.target.value)}
+                placeholder={PROVIDERS[aiProvider]?.placeholder || 'Enter key'}
+                style={styles.input}
+              />
+              <label style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '4px' }}>
+                Model <span style={{ fontWeight: '400', textTransform: 'none' }}>(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={aiModel}
+                onChange={e => setAiModel(e.target.value)}
+                placeholder={PROVIDERS[aiProvider]?.model || 'e.g. gpt-4o'}
+                style={styles.input}
+              />
+              <p style={{ fontSize: '10px', color: 'var(--text-muted)', margin: 0 }}>Stored locally in your browser only.</p>
+            </div>
+          )}
+
+          <button onClick={handleAISave} className="btn btn-primary" style={styles.saveBtn}>Save AI Config</button>
+        </div>
 
         {/* Study Preferences Card */}
         <div style={styles.card} className="card">
