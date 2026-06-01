@@ -1,4 +1,12 @@
-const API_BASE = (import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL || 'http://localhost:8000';
+const RAW_API_URL = (import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL;
+
+if (!RAW_API_URL && import.meta.env.PROD) {
+  throw new Error(
+    '[Nexus JEE] VITE_API_URL is not set. Configure it in your hosting provider (Vercel → Settings → Environment Variables) and redeploy.'
+  );
+}
+
+const API_BASE = RAW_API_URL || 'http://localhost:8000';
 
 let authToken: string | null = localStorage.getItem('nexus_auth_token');
 
@@ -41,10 +49,27 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     headers['Authorization'] = `Bearer ${authToken}`;
   }
 
-  const response = await fetch(url, {
-    ...fetchOptions,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...fetchOptions,
+      headers,
+    });
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : String(err);
+    console.error(
+      `[Nexus JEE] Network request failed.\n` +
+      `  URL: ${url}\n` +
+      `  Method: ${fetchOptions.method || 'GET'}\n` +
+      `  Reason: ${reason}\n` +
+      `  API_BASE: ${API_BASE}\n` +
+      `  This usually means: (a) backend is down, (b) CORS preflight blocked, (c) browser offline, or (d) service worker serving stale JS.`
+    );
+    throw new Error(
+      `Network request failed (${fetchOptions.method || 'GET'} ${path}): ${reason}. ` +
+      `Check the browser console for the full URL and diagnostic info.`
+    );
+  }
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({ detail: response.statusText }));

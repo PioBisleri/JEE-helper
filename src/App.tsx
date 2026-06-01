@@ -313,7 +313,6 @@ function MainLayout() {
     { path: '/test', icon: TestIcon, label: 'Tests' },
     { path: '/syllabus', icon: GridIcon, label: 'Syllabus' },
     { path: '/stats', icon: StatsIcon, label: 'Stats' },
-    { path: '/settings', icon: SettingsIcon, label: 'Settings' },
   ];
 
   return (
@@ -492,8 +491,8 @@ function MainLayout() {
           { path: '/', icon: HomeIcon, label: 'Home' },
           { path: '/revisions', icon: BookIcon, label: 'Revisions' },
           { path: '/test', icon: TestIcon, label: 'Tests' },
+          { path: '/syllabus', icon: GridIcon, label: 'Syllabus' },
           { path: '/stats', icon: StatsIcon, label: 'Stats' },
-          { path: '/settings', icon: SettingsIcon, label: 'Settings' },
         ].map(({ path, icon: Icon, label }) => (
           <button
             key={path}

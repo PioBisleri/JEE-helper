@@ -28,7 +28,7 @@ const styles: Record<string, React.CSSProperties> = {
     gap: '2px',
     zIndex: 49,
     position: 'fixed',
-    top: '52px',
+    top: '48px',
     left: 0,
     right: 0
   },
