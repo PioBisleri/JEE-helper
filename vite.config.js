@@ -42,7 +42,16 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,webm,woff,woff2}'],
+        // Aggressive takeover so a new SW immediately replaces an old one
+        // (otherwise users on a stale page see "Failed to fetch" for old
+        // chunk hashes that the new deployment no longer serves).
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
+        // Don't precache index.html so users always get the latest shell
+        // (otherwise stale SW serves an old index referencing dead chunk hashes).
+        globPatterns: ['**/*.{js,css,svg,png,webm,woff,woff2}'],
+        navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
