@@ -54,6 +54,8 @@ The OAuth client must whitelist your production domain.
 | `FRONTEND_ORIGIN` | `https://nexus-jee-peach.vercel.app` | manual |
 | `VITE_GOOGLE_CLIENT_ID` | same as Vercel — **byte-identical** | manual |
 
+> **CORS regex:** `backend/main.py` also accepts the regex `^https://nexus-jee[a-z0-9-]*\.vercel\.app$` so Vercel preview deploys (e.g. `nexus-jee-peach-git-main-*.vercel.app`, `nexus-jee-peach-pr-*.vercel.app`) work without env-var updates. Only the production `FRONTEND_ORIGIN` needs to be set explicitly.
+
 ### 3. Render Warmup Cron
 
 Free Render spins down after 15 min idle. Keep it warm:
@@ -84,7 +86,7 @@ Alternative: [UptimeRobot](https://uptimerobot.com) free tier, 15-min interval.
 After any deploy or env change, verify in order:
 
 - [ ] `curl https://nexus-jee-api.onrender.com/api/health` → 200 `{"status":"ok"}`
-- [ ] `curl -i -H "Origin: https://nexus-jee-peach.vercel.app" https://nexus-jee-api.onrender.com/api/health` → CORS header matches origin
+- [ ] `curl -i -H "Origin: https://nexus-jee-peach.vercel.app" https://nexus-jee-api.onrender.com/api/health` → `access-control-allow-origin: https://nexus-jee-peach.vercel.app` in response
 - [ ] Open `https://nexus-jee-peach.vercel.app` in incognito → preloader → login page
 - [ ] Sign up with a fresh email → redirect to dashboard
 - [ ] DevTools → Network shows `POST /api/auth/register` → 200
@@ -103,6 +105,7 @@ After any deploy or env change, verify in order:
 | 30-50s first request | Render spin-down | Verify cron ping is running |
 | 409 on signup | Email already in use | Use a different email |
 | PWA install button missing | `manifest.webmanifest` not served | Check `dist/manifest.webmanifest` exists after build |
+| "Disallowed CORS origin" in console | `FRONTEND_ORIGIN` env var on Render is wrong, or a new domain isn't matched by the regex | Update Render env, or extend regex in `backend/main.py` |
 
 ## Files of Interest
 

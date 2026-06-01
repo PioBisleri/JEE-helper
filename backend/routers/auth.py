@@ -36,10 +36,21 @@ async def register(body: RegisterRequest):
     await db.execute("INSERT INTO weekly (user_id) VALUES (?)", (user_id,))
     await db.commit()
 
+    # Fetch created_at populated by DEFAULT (datetime('now'))
+    row = await db.execute_fetchall(
+        "SELECT created_at FROM users WHERE id = ?", (user_id,)
+    )
+    created_at = row[0][0] if row else None
+
     token = create_token(user_id)
     return TokenResponse(
         access_token=token,
-        user=UserResponse(id=user_id, email=body.email, name=body.name),
+        user=UserResponse(
+            id=user_id,
+            email=body.email,
+            name=body.name,
+            created_at=created_at,
+        ),
     )
 
 
@@ -108,10 +119,15 @@ async def google_auth(body: GoogleAuthRequest):
     await db.execute("INSERT INTO weekly (user_id) VALUES (?)", (user_id,))
     await db.commit()
 
+    row = await db.execute_fetchall(
+        "SELECT created_at FROM users WHERE id = ?", (user_id,)
+    )
+    created_at = row[0][0] if row else None
+
     token = create_token(user_id)
     return TokenResponse(
         access_token=token,
-        user=UserResponse(id=user_id, email=email, name=name),
+        user=UserResponse(id=user_id, email=email, name=name, created_at=created_at),
     )
 
 

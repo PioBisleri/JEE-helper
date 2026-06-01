@@ -21,6 +21,6 @@ services:
       - key: FERNET_KEY
         generateValue: true
       - key: FRONTEND_ORIGIN
-        value: https://jee-helper.vercel.app
+        value: https://nexus-jee-peach.vercel.app
       - key: VITE_GOOGLE_CLIENT_ID
         sync: false

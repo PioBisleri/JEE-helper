@@ -28,7 +28,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Nexus JEE API", version="1.0.0", lifespan=lifespan)
 
-# CORS — add production frontend URL via env var
+# CORS — add production frontend URL via env var, plus a regex to allow
+# Vercel preview deployments (e.g. nexus-jee-peach-git-main-*.vercel.app).
 _cors_origins = [
     "http://localhost:5173",
     "http://localhost:3000",
@@ -41,6 +42,11 @@ if _prod_origin:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
+    # Path-aware end-anchor defends against anything slipping past the start anchor.
+    # Note: per the CORS spec, the Origin header is scheme+host+port only (no path),
+    # so the `(/.*)?$` suffix is defensive — it lets us match if a misbehaving proxy
+    # ever appends a path, while still rejecting `*.vercel.app.evil.com`.
+    allow_origin_regex=r"^https://nexus-jee[a-z0-9-]*\.vercel\.app(/.*)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
