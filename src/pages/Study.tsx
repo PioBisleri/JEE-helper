@@ -276,8 +276,11 @@ export default function Study() {
       const difficultyIndex = Math.min(progress.currentDifficultyIndex, chapter.difficulty_curve.length - 1);
       const difficultyPoint = chapter.difficulty_curve[difficultyIndex];
       const conceptsLearned = storage.getConceptsLearned().map(c => c.concept);
+      const seenTexts = sessionHistory.map(h => h.question.question).filter(Boolean);
 
-      const q = await generateQuestion(chapter, difficultyPoint, conceptsLearned, currentMood || mood || 'focused');
+      const q = await generateQuestion(chapter, difficultyPoint, conceptsLearned, currentMood || mood || 'focused', {
+        excludeQuestionTexts: seenTexts,
+      });
       setCurrentQuestion(q as unknown as Question);
       resetQuestionState();
       setPhase('question');
@@ -303,7 +306,10 @@ export default function Study() {
       setReviewIndex(0);
 
       const firstDue = due[0];
-      const q = await generateReviewQuestion(firstDue.concept, chapter?.name || '');
+      const seenTexts = sessionHistory.map(h => h.question.question).filter(Boolean);
+      const q = await generateReviewQuestion(firstDue.concept, chapter?.name || '', {
+        excludeQuestionTexts: seenTexts,
+      });
       setReviewQuestion(q as unknown as ReviewQuestionResponse);
       resetQuestionState();
       setPhase('review');
@@ -525,7 +531,10 @@ export default function Study() {
       setIsLoading(true);
       try {
         const nextReviewObj = reviewQueue[nextIdx];
-        const q = await generateReviewQuestion(nextReviewObj.concept, chapter?.name || '');
+        const seenTexts = sessionHistory.map(h => h.question.question).filter(Boolean);
+        const q = await generateReviewQuestion(nextReviewObj.concept, chapter?.name || '', {
+          excludeQuestionTexts: seenTexts,
+        });
         setReviewQuestion(q as unknown as ReviewQuestionResponse);
         resetQuestionState();
       } catch (err) {

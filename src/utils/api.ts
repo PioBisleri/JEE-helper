@@ -240,14 +240,16 @@ export async function callAI(userPrompt: string, customSystemPrompt: string = SY
 }
 
 // API functions
-export async function generateQuestion(chapter: { name: string; id?: string }, difficultyPoint: string, conceptsAlreadyLearned: string[], mood: string): Promise<Record<string, unknown>> {
-  // Check cache first
+export async function generateQuestion(
+  chapter: { name: string; id?: string },
+  difficultyPoint: string,
+  conceptsAlreadyLearned: string[],
+  mood: string,
+  options?: { excludeQuestionTexts?: string[]; difficulty?: 'easy' | 'medium' | 'hard' }
+): Promise<Record<string, unknown>> {
   const chapterId = chapter.id || chapter.name;
-  const cached = getCachedQuestion(chapterId, difficultyPoint, 'medium');
-  if (cached) {
-    logger.log(`Cache hit for ${chapterId}/${difficultyPoint}`);
-    return cached as unknown as Record<string, unknown>;
-  }
+  const difficulty = options?.difficulty || 'medium';
+  const exclude = options?.excludeQuestionTexts || [];
 
   const moodInstruction = {
     focused: 'Normal JEE Mains difficulty. Standard question.',
@@ -281,12 +283,23 @@ Return ONLY this JSON schema:
   "difficulty": "easy or medium or hard"
 }`;
 
-  const result = await callAI(userPrompt);
-  // Cache the generated question
-  if (result && result.question && chapter.id) {
-    cacheQuestion(chapter.id, difficultyPoint, 'medium', result as unknown as import('../types/ai').Question);
+  try {
+    // Always try AI first — cache is a fallback, not a primary source
+    const result = await callAI(userPrompt);
+    if (result && result.question && chapter.id) {
+      cacheQuestion(chapter.id, difficultyPoint, difficulty, result as unknown as import('../types/ai').Question);
+    }
+    return result;
+  } catch (err) {
+    // AI failed — fall back to cache (useful for offline, rate limits, transient errors)
+    logger.warn(`AI generation failed, attempting cache fallback: ${err instanceof Error ? err.message : String(err)}`);
+    const cached = getCachedQuestion(chapterId, difficultyPoint, difficulty, exclude);
+    if (cached) {
+      logger.log(`Cache fallback hit for ${chapterId}/${difficultyPoint}`);
+      return cached as unknown as Record<string, unknown>;
+    }
+    throw err;
   }
-  return result;
 }
 
 export async function generateScaffoldL1(originalQuestion: string, primaryConcept: string, chapterName: string): Promise<Record<string, unknown>> {
@@ -454,13 +467,12 @@ Return ONLY this JSON schema:
   return callAI(userPrompt);
 }
 
-export async function generateReviewQuestion(concept: string, chapterName: string): Promise<Record<string, unknown>> {
-  // Check cache first
-  const cached = getCachedQuestion(chapterName, concept, 'medium');
-  if (cached) {
-    logger.log(`Cache hit for review: ${chapterName}/${concept}`);
-    return cached as unknown as Record<string, unknown>;
-  }
+export async function generateReviewQuestion(
+  concept: string,
+  chapterName: string,
+  options?: { excludeQuestionTexts?: string[] }
+): Promise<Record<string, unknown>> {
+  const exclude = options?.excludeQuestionTexts || [];
 
   const userPrompt = `Generate ONE JEE Mains level review question testing the concept "${concept}" from "${chapterName}".
 This is a spaced repetition review — make it slightly different from a standard problem to test real understanding.
@@ -475,11 +487,21 @@ Return ONLY this JSON schema:
   "whyCorrect": "clear explanation of correct option"
 }`;
 
-  const result = await callAI(userPrompt);
-  if (result && result.question) {
-    cacheQuestion(chapterName, concept, 'medium', result as unknown as import('../types/ai').Question);
+  try {
+    const result = await callAI(userPrompt);
+    if (result && result.question) {
+      cacheQuestion(chapterName, concept, 'medium', result as unknown as import('../types/ai').Question);
+    }
+    return result;
+  } catch (err) {
+    logger.warn(`AI review generation failed, attempting cache fallback: ${err instanceof Error ? err.message : String(err)}`);
+    const cached = getCachedQuestion(chapterName, concept, 'medium', exclude);
+    if (cached) {
+      logger.log(`Cache fallback hit for review: ${chapterName}/${concept}`);
+      return cached as unknown as Record<string, unknown>;
+    }
+    throw err;
   }
-  return result;
 }
 
 export async function generateWorkedSolution(question: string): Promise<Record<string, unknown>> {
