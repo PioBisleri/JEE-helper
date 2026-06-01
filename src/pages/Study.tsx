@@ -899,27 +899,6 @@ export default function Study() {
                   </div>
                 )}
 
-                {/* Confirm Panel — fixed, centered, overlay. Outer div handles
-                    positioning (no transform), inner motion.div handles animation. */}
-                {selectedOption && !confirmed && (
-                  <div style={styles.confirmDock as React.CSSProperties}>
-                    <motion.div
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: 20, opacity: 0 }}
-                      style={styles.confirmDockInner}
-                    >
-                      <button
-                        style={styles.confirmDockButton}
-                        className="btn btn-primary"
-                        onClick={handleConfirmAnswer}
-                      >
-                        Confirm Selection
-                      </button>
-                    </motion.div>
-                  </div>
-                )}
-
                 {/* Confirmed / Post-Submit Controls */}
                 {confirmed && (
                   <div style={styles.resultBox}>
@@ -1002,6 +981,24 @@ export default function Study() {
                       <StuckIcon size={14} style={{ marginRight: '6px' }} /> I'm stuck
                     </button>
                   </div>
+                )}
+
+                {/* Confirm Button — sits above Previous/Next, only when an option
+                    is selected and not yet confirmed. Slides up on appear. */}
+                {selectedOption && !confirmed && (
+                  <motion.div
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    style={{ marginTop: '16px' }}
+                  >
+                    <button
+                      style={styles.confirmInlineButton}
+                      className="btn btn-primary"
+                      onClick={handleConfirmAnswer}
+                    >
+                      Confirm Selection
+                    </button>
+                  </motion.div>
                 )}
 
                 {/* Previous / Next Navigation Row */}
@@ -1512,26 +1509,11 @@ const styles: Record<string, React.CSSProperties> = {
     transform: 'translateX(-50%)',
     zIndex: 99
   },
-  confirmDock: {
-    position: 'fixed',
-    inset: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 200,
-    pointerEvents: 'none'
-  },
-  confirmDockInner: {
-    pointerEvents: 'auto',
-    width: '90%',
-    maxWidth: '320px'
-  },
-  confirmDockButton: {
+  confirmInlineButton: {
     width: '100%',
-    padding: '14px 24px',
-    fontSize: '16px',
-    fontWeight: 600,
-    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)'
+    height: '48px',
+    fontSize: '15px',
+    fontWeight: 600
   },
   resultBox: {
     marginTop: '16px',
