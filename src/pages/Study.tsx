@@ -899,21 +899,25 @@ export default function Study() {
                   </div>
                 )}
 
-                {/* Confirm Panel (Slide up) */}
+                {/* Confirm Panel — fixed, centered, overlay. Outer div handles
+                    positioning (no transform), inner motion.div handles animation. */}
                 {selectedOption && !confirmed && (
-                  <motion.div 
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    style={styles.confirmDock as React.CSSProperties}
-                  >
-                    <button 
-                      style={{ width: '100%' }} 
-                      className="btn btn-primary"
-                      onClick={handleConfirmAnswer}
+                  <div style={styles.confirmDock as React.CSSProperties}>
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: 20, opacity: 0 }}
+                      style={styles.confirmDockInner}
                     >
-                      Confirm Selection
-                    </button>
-                  </motion.div>
+                      <button
+                        style={styles.confirmDockButton}
+                        className="btn btn-primary"
+                        onClick={handleConfirmAnswer}
+                      >
+                        Confirm Selection
+                      </button>
+                    </motion.div>
+                  </div>
                 )}
 
                 {/* Confirmed / Post-Submit Controls */}
@@ -1510,12 +1514,24 @@ const styles: Record<string, React.CSSProperties> = {
   },
   confirmDock: {
     position: 'fixed',
-    bottom: '80px',
-    left: '50%',
-    transform: 'translateX(-50%)',
+    inset: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 200,
+    pointerEvents: 'none'
+  },
+  confirmDockInner: {
+    pointerEvents: 'auto',
     width: '90%',
-    maxWidth: '480px',
-    zIndex: 85
+    maxWidth: '320px'
+  },
+  confirmDockButton: {
+    width: '100%',
+    padding: '14px 24px',
+    fontSize: '16px',
+    fontWeight: 600,
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)'
   },
   resultBox: {
     marginTop: '16px',
