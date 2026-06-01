@@ -122,6 +122,7 @@ export default function Study() {
   const [timerSeconds, setTimerSeconds] = useState(0);
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const questionStartTimeRef = useRef(Date.now());
+  const autoAdvanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Listen to network status
   useEffect(() => {
@@ -132,6 +133,16 @@ export default function Study() {
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // Clear any pending auto-advance timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoAdvanceTimeoutRef.current) {
+        clearTimeout(autoAdvanceTimeoutRef.current);
+        autoAdvanceTimeoutRef.current = null;
+      }
     };
   }, []);
 
@@ -443,7 +454,12 @@ export default function Study() {
 
       // Check auto-advance preference
       if (preferences.autoAdvance) {
-        setTimeout(() => {
+        // Clear any pending auto-advance from a previous question
+        if (autoAdvanceTimeoutRef.current) {
+          clearTimeout(autoAdvanceTimeoutRef.current);
+        }
+        autoAdvanceTimeoutRef.current = setTimeout(() => {
+          autoAdvanceTimeoutRef.current = null;
           handleNextQuestion();
         }, 2500);
       }
@@ -470,10 +486,15 @@ export default function Study() {
   };
 
   const handlePreviousQuestion = () => {
+    // Cancel any pending auto-advance so it doesn't fire with stale state
+    if (autoAdvanceTimeoutRef.current) {
+      clearTimeout(autoAdvanceTimeoutRef.current);
+      autoAdvanceTimeoutRef.current = null;
+    }
     if (blockQuestionIndex > 0) {
       const prevIdx = blockQuestionIndex - 1;
       setBlockQuestionIndex(prevIdx);
-      
+
       // Restore the state from sessionHistory
       const hist = sessionHistory[prevIdx];
       if (hist) {
@@ -488,6 +509,11 @@ export default function Study() {
   };
 
   const handleNextQuestion = () => {
+    // Cancel any pending auto-advance so it doesn't fire with stale state
+    if (autoAdvanceTimeoutRef.current) {
+      clearTimeout(autoAdvanceTimeoutRef.current);
+      autoAdvanceTimeoutRef.current = null;
+    }
     const nextIdx = blockQuestionIndex + 1;
     const totalCountLimit = preferences.questionsPerSession || 5;
 
@@ -495,7 +521,7 @@ export default function Study() {
       triggerSessionSummary();
     } else {
       setBlockQuestionIndex(nextIdx);
-      
+
       // If we already have a historical question loaded for this index, restore it
       if (sessionHistory[nextIdx]) {
         const hist = sessionHistory[nextIdx];
