@@ -1,5 +1,52 @@
-node_modules/
+# ─── Build outputs ───
 dist/
+build/
+
+# ─── Dependencies ───
+node_modules/
+manim/manim_venv/
+manim/__pycache__/
+__pycache__/
+*.pyc
+
+# ─── Secrets & local config ───
 .env
+.env.local
+.env.*.local
+
+# ─── OS noise ───
 .DS_Store
+Thumbs.db
+*.swp
+*~
+
+# ─── Editor / IDE ───
+.idea/
+.vscode/
+*.sublime-*
+.zed/
+
+# ─── Logs & temp ───
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ─── Runtime / caches ───
+.cache/
+*.tsbuildinfo
+vite.config.js.timestamp-*
+
+# ─── Manim generated media ───
+manim/media/
+
+# ─── Database files ───
+*.db
+*.db-shm
+*.db-wal
+backend/nexus_jee.db*
+
+# ─── Python virtual environments ───
+backend/.venv/
+backend/__pycache__/

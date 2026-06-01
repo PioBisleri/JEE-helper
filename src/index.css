@@ -557,6 +557,64 @@ h4 { font-size: 16px; font-weight: 600; }
   }
 }
 
+/* Mobile touch optimizations */
+@media (max-width: 1023px) {
+  /* Larger touch targets for buttons */
+  .btn {
+    min-height: 44px;
+    font-size: 15px;
+  }
+
+  /* Bottom nav bigger tap areas */
+  .bottom-nav-item {
+    min-width: 56px;
+    min-height: 48px;
+  }
+
+  /* Make sure content doesn't hide behind bottom nav */
+  .main-content {
+    padding-bottom: 80px;
+  }
+
+  /* Page headings scale down slightly */
+  h1 { font-size: 26px; }
+  h2 { font-size: 20px; }
+
+  /* Tables scroll horizontally */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Modal/overlay full width on mobile */
+  .modal-mobile-full {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 0 !important;
+    max-height: 100vh !important;
+  }
+
+  /* Reduce card padding on small screens */
+  .card {
+    padding: 16px;
+  }
+
+  /* Smooth scroll */
+  html {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
+
+/* Small phones (< 380px) */
+@media (max-width: 380px) {
+  body { font-size: 14px; }
+  .btn { font-size: 14px; padding: 8px 14px; }
+  h1 { font-size: 22px; }
+  h2 { font-size: 18px; }
+}
+
 /* Focus styles */
 input:focus, textarea:focus, select:focus {
   outline: none;

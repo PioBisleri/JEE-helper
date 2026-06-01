@@ -1,231 +1,90 @@
-<div align="center">
-
 # Nexus JEE
 
-**AI-Powered JEE Mains Preparation Platform**
+AI-powered JEE Mains preparation with personalized questions, adaptive scaffolding, and spaced repetition.
 
-[![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-8-646cff?style=flat-square&logo=vite&logoColor=white)](https://vite.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06b6d4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![KaTeX](https://img.shields.io/badge/KaTeX-0.17-ffffff?style=flat-square&logo=katex&logoColor=black)](https://katex.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+## Architecture
 
-</div>
+- **Frontend**: React 19 + TypeScript + Vite + PWA
+- **Backend**: FastAPI + async SQLite + JWT auth
+- **Deployment**: Vercel (frontend) + Render free tier (backend)
 
----
+## Local Development
 
-## About
-
-Nexus JEE is a fully client-side AI tutoring platform for JEE Mains preparation. It generates personalized questions in real-time, scaffolds students through difficult concepts, tracks learning milestones, and provides comprehensive performance analytics. No backend required — all data persists in the browser via `localStorage`.
-
----
-
-## Key Features
-
-### AI-Generated Content
-- **Real-time question generation** — every question is unique, tailored to chapter, difficulty, and student progress
-- **14 specialized AI prompt functions** — questions, scaffolds, hints, summaries, test papers, and more
-- **Request deduplication** and **automatic retries** with exponential backoff
-
-### Adaptive Scaffolding
-When a student answers incorrectly, the system provides four progressive support levels:
-
-1. **Simplified Question** — isolates the missed concept
-2. **Concept Explanation** — analogy, worked example, common mistakes
-3. **Concept Ladder** — 5-rung progression from fundamentals to advanced
-4. **Worked Solution** — full step-by-step derivation
-
-### Spaced Repetition
-Scheduled reviews at 1, 3, 7, and 14-day intervals. Due reviews surface before each session to reinforce long-term retention.
-
-### Full Syllabus Coverage
-
-| Subject | Chapters |
-|---------|----------|
-| Physics | 15 |
-| Chemistry | 12 |
-| Mathematics | 15 |
-| **Total** | **42** |
-
-Each chapter includes 4–10 progressive difficulty steps with curated subtopics.
-
-### Mock Exams & Practice
-- **Full JEE simulation** — 75 questions, 180 minutes, zero hints
-- **Single-subject mocks** — Physics, Chemistry, or Mathematics
-- **Custom practice** — configurable question count, difficulty, and chapter selection
-
-### Performance Analytics
-- Projected JEE score based on solving accuracy
-- Mistake DNA — categorized error analysis (conceptual, calculation, misread, distractor)
-- Activity heatmap, concept map, chapter mastery charts
-- Weekly test trends and session replays
-
-### Gamification
-- **XP & Leveling** — 6 progression tiers from JEE Aspirant to JEE Legend
-- **15 achievement badges** — streaks, speed solving, perfect scores, consistency
-- **Daily challenges** — 30-question assessments weighted toward weak areas
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Framework | React 19 |
-| Build | Vite 8 |
-| Styling | Tailwind CSS 4 |
-| Routing | React Router 6 |
-| Charts | Recharts |
-| Math Rendering | KaTeX |
-| Animations | Framer Motion |
-| AI Backend | OpenRouter API |
-| Visualizations | Python Manim |
-
----
-
-## Project Structure
-
-```
-nexus-jee/
-├── src/
-│   ├── main.jsx                    # Entry point
-│   ├── App.jsx                     # Router, layout, navigation
-│   ├── index.css                   # Design system, global styles
-│   ├── data/                       # Chapters, formulas, achievements
-│   ├── utils/                      # API, storage, spaced repetition
-│   ├── components/                 # 25 reusable UI components
-│   └── pages/                      # 9 route components
-├── manim/                          # Python Manim animation source
-│   ├── physics/                    # 15 chapter scripts
-│   ├── maths/                      # 15 chapter scripts
-│   └── chemistry/                  # 12 chapter scripts
-├── public/animations/              # 128 pre-rendered .webm files
-├── .env                            # API key (gitignored)
-└── package.json
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-- [Node.js](https://nodejs.org/) 18+
-- [OpenRouter API key](https://openrouter.ai/keys)
-
-### Installation
-
+### Frontend
 ```bash
-git clone <repository-url>
-cd nexus-jee
-npm install
-```
-
-### Configuration
-
-Create a `.env` file:
-
-```env
-VITE_OPENROUTER_KEY=your_api_key_here
-```
-
-### Development
-
-```bash
+npm install --legacy-peer-deps
+cp .env.example .env  # fill in your keys
 npm run dev
 ```
 
-Open `http://localhost:5173`.
-
-### Production Build
-
+### Backend
 ```bash
-npm run build
-npm run preview
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# Generate required secrets
+export JWT_SECRET=$(python -c "import secrets; print(secrets.token_urlsafe(64))")
+export FERNET_KEY=$(python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
+
+uvicorn main:app --reload --port 8000
 ```
 
----
+## Production Deployment
 
-## Study Flow
+### Frontend (Vercel)
 
-The study session follows a 9-phase state machine:
+1. Sign in to [vercel.com](https://vercel.com) with GitHub
+2. Import the repo
+3. Framework: Vite (auto-detected)
+4. Build: `npm run build`
+5. Output: `dist`
+6. Set environment variables:
+   - `VITE_API_URL` — your Render backend URL (e.g., `https://nexus-jee-api.onrender.com`)
+   - `VITE_GOOGLE_CLIENT_ID` — your Google OAuth client ID
+   - **Do not** set `VITE_OPENROUTER_KEY` — users provide their own API keys
 
-```
-Mood Selection → Spaced Reviews → Main Questions
-                                        │
-                                 ┌──────┴──────┐
-                                 ▼              ▼
-                             Correct          Wrong
-                                 │              │
-                                 ▼              ▼
-                           Next Question   Scaffold L1 → L2 → Ladder → Solution
-                                                              │
-                                                         ┌────┘
-                                                         ▼
-                                                   Back to Question
-```
+### Backend (Render)
 
-Every phase transition is explicit — no shortcuts.
+1. Sign in to [render.com](https://render.com) with GitHub (no card required for free tier)
+2. New Web Service → connect the `JEE-helper` repo
+3. Root: `backend`
+4. Build: `pip install -r requirements.txt`
+5. Start: `gunicorn main:app -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT --timeout 120`
+6. Add persistent disk: 1GB at `/opt/render/project/src/data`
+7. Set environment variables:
+   - `DATABASE_PATH` = `/opt/render/project/src/data/nexus_jee.db`
+   - `JWT_SECRET` = a new random secret (`python -c "import secrets; print(secrets.token_urlsafe(64))"`)
+   - `FERNET_KEY` = a new Fernet key (`python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`)
+   - `FRONTEND_ORIGIN` = your Vercel URL (e.g., `https://nexus-jee.vercel.app`)
+   - `VITE_GOOGLE_CLIENT_ID` = your Google OAuth client ID
+8. Deploy
 
----
+### Google OAuth Setup
 
-## Data Persistence
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Select your OAuth client
+3. Add your production frontend URL to **Authorized JavaScript origins** (e.g., `https://nexus-jee.vercel.app`)
 
-All user data is stored in `localStorage` under the `jeeforge_` namespace:
+## Free Tier Limitations
 
-| Domain | Key | Contents |
-|--------|-----|----------|
-| Progress | `jeeforge_progress` | Per-chapter metrics |
-| Concepts | `jeeforge_concepts` | Learned concepts with review scheduling |
-| Sessions | `jeeforge_sessions` | Study session logs |
-| Streak | `jeeforge_streak` | Current and longest streaks |
-| XP | `jeeforge_xp` | Total experience points |
-| Mistakes | `jeeforge_mistakes` | Error log with categorization |
-| Bookmarks | `jeeforge_bookmarks` | Saved questions |
-| Notes | `jeeforge_notes` | Per-concept revision notes |
-| Achievements | `jeeforge_achievements` | Unlocked badge IDs |
-| Weekly | `jeeforge_weekly` | Test history and weekly concepts |
+- **Render free spins down after 15 minutes idle** — first request after idle takes 30-50 seconds
+- **512MB RAM** on Render free tier — tight for high traffic, fine for v1
+- **SQLite on persistent disk** — no replication, single-region
+- **No auto-scaling** — single instance
 
----
+## Environment Variables
 
-## XP Progression
+### Frontend
+- `VITE_API_URL` — Backend API URL
+- `VITE_GOOGLE_CLIENT_ID` — Google OAuth client ID
+- `VITE_OPENROUTER_KEY` — (Optional) OpenRouter key for development; not used in production
 
-| Level | Title | XP Required |
-|-------|-------|-------------|
-| 1 | JEE Aspirant | 0 |
-| 2 | Problem Solver | 500 |
-| 3 | Concept Crusher | 1,000 |
-| 4 | Formula Master | 1,500 |
-| 5 | JEE Warrior | 2,000 |
-| 6 | JEE Legend | 2,500+ |
-
----
-
-## Commands
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Production build |
-| `npm run preview` | Preview production build |
-| `npm run lint` | Run ESLint |
-| `cd manim && python render_all.py` | Render all Manim animations |
-
----
-
-## Browser Support
-
-Chrome 90+, Firefox 88+, Safari 14+, Edge 90+. Requires `localStorage` and `fetch` API support.
-
----
-
-## License
-
-MIT License — see [LICENSE](LICENSE) for details.
-
----
-
-<div align="center">
-
-Built for students who learn by solving.
-
-</div>
+### Backend
+- `JWT_SECRET` — Required. Secret for signing JWT tokens
+- `FERNET_KEY` — Required. Key for encrypting AI provider API keys
+- `DATABASE_PATH` — Optional. Defaults to `backend/nexus_jee.db`
+- `FRONTEND_ORIGIN` — Optional. Production frontend URL for CORS
+- `VITE_GOOGLE_CLIENT_ID` — Required. For Google OAuth token verification
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` — Optional. For password reset emails
