@@ -13,7 +13,9 @@ import {
   generateReviewQuestion,
   generateWorkedSolution
 } from '../utils/api';
+import { pyqApi, getPYQChapterId, type PYQQuestion } from '../utils/pyqApi';
 import { markReviewed, getDueReviews } from '../utils/spaceRepetition';
+import { logger } from '../utils/logger';
 import { useUser } from '../components/UserContext';
 import { useToast } from '../components/ToastContext';
 import { SkeletonQuestion } from '../components/LoadingSkeleton';
@@ -54,7 +56,7 @@ export default function Study() {
   const { subject, chapterId } = useParams();
   const navigate = useNavigate();
   const { gainXP, preferences: rawPreferences, checkProgressionXP } = useUser();
-  const preferences = rawPreferences as unknown as { defaultMood?: string; questionsPerSession?: number; autoAdvance?: boolean };
+  const preferences = rawPreferences as unknown as { defaultMood?: string; questionsPerSession?: number; autoAdvance?: boolean; pyqEnabled?: boolean; pyqRatio?: number };
   const { showToast } = useToast();
 
   const chapter = CHAPTERS[subject as keyof typeof CHAPTERS]?.find((c: { id: string }) => c.id === chapterId);
@@ -341,6 +343,54 @@ export default function Study() {
 
   // ─── API LOADERS ───
 
+  // Fetch a batch of PYQ questions from the backend. Returns a list of
+  // Question objects (matching the AI Question schema) or [] on failure.
+  // Used when preferences.pyqEnabled is true.
+  const fetchPYQBatch = useCallback(async (size: number, currentMood?: string): Promise<Question[]> => {
+    if (!chapter || isOffline) return [];
+    const pyqChapterId = getPYQChapterId(chapter.id || chapter.name);
+    if (!pyqChapterId) return [];
+    const seenIds = [
+      ...sessionHistoryRef.current.map(h => (h.question as PYQQuestion)._meta?.question_id).filter(Boolean) as string[],
+      ...questionQueueRef.current.map(q => (q as unknown as PYQQuestion)._meta?.question_id).filter(Boolean) as string[],
+    ];
+    // Map Nexus difficulty → PYQ difficulty. Default to medium.
+    const progress = storage.getChapterProgress(chapter.id);
+    const difficultyIndex = Math.min(progress.currentDifficultyIndex, chapter.difficulty_curve.length - 1);
+    const difficultyPoint = chapter.difficulty_curve[difficultyIndex] || 'medium';
+    const pyqDifficulty = /easy|easy/i.test(difficultyPoint)
+      ? 'easy'
+      : /hard|hard/i.test(difficultyPoint)
+      ? 'hard'
+      : 'medium';
+
+    try {
+      const res = await pyqApi.getByChapter(pyqChapterId, {
+        difficulty: pyqDifficulty,
+        limit: size,
+        excludeQuestionIds: seenIds,
+      });
+      return (res.questions || []) as unknown as Question[];
+    } catch (err) {
+      logger.warn(`PYQ fetch failed: ${err instanceof Error ? err.message : String(err)}`);
+      return [];
+    }
+  }, [chapter, isOffline]);
+
+  // Should this batch slot use a PYQ? Uses pyqRatio (0..1) — default 0.5
+  // (half PYQs, half AI). Returns true for the first pyqRatio*batchSize
+  // slots, false for the rest. Stable per-call so the user gets a
+  // predictable mix in each batch.
+  const shouldUsePYQForBatchSlot = (slotIndex: number, batchSize: number): boolean => {
+    // Default ON when preference is undefined (matches Settings default)
+    if (preferences.pyqEnabled === false) return false;
+    if (!chapter) return false;
+    const pyqChapterId = getPYQChapterId(chapter.id || chapter.name);
+    if (!pyqChapterId) return false;
+    const ratio = preferences.pyqRatio ?? 0.5;
+    return slotIndex < Math.ceil(batchSize * ratio);
+  };
+
   // Refill the question queue by generating BATCH_SIZE questions in parallel.
   // Caller awaits this for the first batch; subsequent refills are fire-and-forget
   // so the user never waits. Idempotent: safe to call multiple times.
@@ -368,26 +418,48 @@ export default function Study() {
         'This is variation #3. Pick a graph/visualization-based or application-based question. Use distinctly different numbers/context than a standard example.',
       ];
 
-      const results = await Promise.allSettled(
-        Array.from({ length: BATCH_SIZE }, (_, i) =>
-          generateQuestion(chapter, difficultyPoint, conceptsLearned, currentMood || mood || 'focused', {
-            excludeQuestionTexts: seenTexts,
-            variationHint: VARIATION_HINTS[i % VARIATION_HINTS.length],
-          })
-        )
-      );
+      // Split batch slots between PYQ and AI based on user preference.
+      // PYQ slots are grouped at the start (deterministic per call) so
+      // the user gets a predictable mix each batch.
+      const slots = Array.from({ length: BATCH_SIZE }, (_, i) => ({
+        usePYQ: shouldUsePYQForBatchSlot(i, BATCH_SIZE),
+        variationHint: VARIATION_HINTS[i % VARIATION_HINTS.length],
+      }));
+      const pyqCount = slots.filter(s => s.usePYQ).length;
+      const aiCount = BATCH_SIZE - pyqCount;
 
-      const fulfilled = results
+      // Fire PYQ fetch (single call gets all PYQs at once) and AI calls in parallel
+      const [pyqQuestions, aiResults] = await Promise.all([
+        pyqCount > 0 ? fetchPYQBatch(pyqCount, currentMood) : Promise.resolve([] as Question[]),
+        Promise.allSettled(
+          slots.filter(s => !s.usePYQ).map(s =>
+            generateQuestion(chapter, difficultyPoint, conceptsLearned, currentMood || mood || 'focused', {
+              excludeQuestionTexts: seenTexts,
+              variationHint: s.variationHint,
+            })
+          )
+        ),
+      ]);
+
+      const aiFulfilled = (aiResults as PromiseSettledResult<Record<string, unknown>>[])
         .filter((r): r is PromiseFulfilledResult<Record<string, unknown>> => r.status === 'fulfilled')
         .map(r => r.value as unknown as Question)
         .filter(q => q && q.question && q.options);
+
+      // Combine PYQ + AI in slot order (PYQ first if any, then AI)
+      let slotCursor = 0;
+      const ordered: Question[] = [];
+      for (let i = 0; i < pyqCount && slotCursor < pyqQuestions.length; i++) {
+        ordered.push(pyqQuestions[slotCursor++]);
+      }
+      for (const q of aiFulfilled) ordered.push(q);
 
       // Dedupe by question text — the AI can still occasionally return the
       // same response, and we never want to show the same question twice in
       // a row.
       const seenInBatch = new Set<string>();
       const questions: Question[] = [];
-      for (const q of fulfilled) {
+      for (const q of ordered) {
         const text = (q.question || '').trim();
         if (text && !seenInBatch.has(text) && !seenTexts.includes(text)) {
           seenInBatch.add(text);
@@ -405,14 +477,21 @@ export default function Study() {
     } finally {
       batchInFlightRef.current = false;
     }
-  }, [chapter, chapterId, mood, isOffline]);
+  }, [chapter, chapterId, mood, isOffline, fetchPYQBatch, preferences.pyqEnabled, preferences.pyqRatio]);
 
   // Single-question generator — fallback when the batch dedup leaves us
   // empty (e.g. all 3 parallel calls returned the same response despite
-  // variation hints). Generates one question with a fresh variation hint.
+  // variation hints). Tries PYQ first if enabled, then AI with a fresh
+  // variation hint.
   const generateSingle = useCallback(async (currentMood?: string): Promise<Question | null> => {
     if (!chapter || isOffline) return null;
     try {
+      // Try PYQ first (instant, no AI cost)
+      if (preferences.pyqEnabled !== false) {
+        const pyqQuestions = await fetchPYQBatch(1, currentMood);
+        if (pyqQuestions.length > 0) return pyqQuestions[0];
+      }
+      // Fall back to AI
       const progress = storage.getChapterProgress(chapterId!);
       const difficultyIndex = Math.min(progress.currentDifficultyIndex, chapter.difficulty_curve.length - 1);
       const difficultyPoint = chapter.difficulty_curve[difficultyIndex];
@@ -438,7 +517,7 @@ export default function Study() {
     } catch {
       return null;
     }
-  }, [chapter, chapterId, mood, isOffline]);
+  }, [chapter, chapterId, mood, isOffline, fetchPYQBatch, preferences.pyqEnabled]);
 
   const loadQuestion = useCallback(async (currentMood?: string) => {
     if (!chapter || isOffline) return;

@@ -6,7 +6,7 @@ from routers import (
     auth, profile, progress, concepts, sessions,
     streak, xp, mistakes, bookmarks, notes,
     achievements, weekly, ai_config, ai_proxy,
-    daily_challenge, gate_attempts,
+    daily_challenge, gate_attempts, pyq,
 )
 from routers.migration import router as migration_router
 
@@ -71,6 +71,7 @@ app.include_router(ai_config.router)
 app.include_router(ai_proxy.router)
 app.include_router(daily_challenge.router)
 app.include_router(gate_attempts.router)
+app.include_router(pyq.router)
 
 # Migration
 app.include_router(migration_router)

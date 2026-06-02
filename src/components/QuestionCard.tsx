@@ -4,7 +4,7 @@ import type { Question } from '../types';
 import type { CSSProperties } from 'react';
 
 interface QuestionCardProps {
-  question: Question;
+  question: Question & { _meta?: { source?: string; year?: number; paperTitle?: string } };
   hideBookmark?: boolean;
   onAnswer?: (option: string) => void;
   onStuck?: () => void;
@@ -20,6 +20,7 @@ export default function QuestionCard({ question, hideBookmark = false }: Questio
   if (!question) return null;
 
   const isSaved = bookmarks.some((b: unknown) => (b as { question?: string })?.question === question.question);
+  const isPYQ = question._meta?.source === 'pyq';
 
   const toggleBookmark = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -30,9 +31,19 @@ export default function QuestionCard({ question, hideBookmark = false }: Questio
   return (
     <div style={styles.card} className="card">
       <div style={styles.header}>
-        <span style={styles.badge}>
-          {question.primaryConcept || "JEE Concept"}
-        </span>
+        <div style={styles.badges}>
+          <span style={styles.badge}>
+            {question.primaryConcept || "JEE Concept"}
+          </span>
+          {isPYQ && (
+            <span
+              style={styles.pyqBadge}
+              title={question._meta?.paperTitle ? `JEE Mains ${question._meta.year} — ${question._meta.paperTitle}` : 'Real JEE Mains question'}
+            >
+              PYQ {question._meta?.year ? `· ${question._meta.year}` : ''}
+            </span>
+          )}
+        </div>
         {!hideBookmark && (
           <button style={styles.bookmarkBtn} onClick={toggleBookmark}>
             <span style={{ fontSize: '16px', color: isSaved ? 'var(--warning)' : 'var(--text-muted)', transition: 'color 0.15s' } as CSSProperties}>
@@ -62,6 +73,12 @@ const styles: Record<string, CSSProperties> = {
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  badges: {
+    display: 'flex',
+    gap: '6px',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
   badge: {
     fontSize: '10px',
     fontWeight: '700',
@@ -70,6 +87,16 @@ const styles: Record<string, CSSProperties> = {
     padding: '3px 8px',
     borderRadius: 'var(--radius-sm)',
     letterSpacing: '0.02em',
+  },
+  pyqBadge: {
+    fontSize: '10px',
+    fontWeight: '700',
+    color: 'var(--success, #22c55e)',
+    backgroundColor: 'var(--success-dim, rgba(34, 197, 94, 0.12))',
+    padding: '3px 8px',
+    borderRadius: 'var(--radius-sm)',
+    letterSpacing: '0.02em',
+    cursor: 'help',
   },
   bookmarkBtn: {
     background: 'none',

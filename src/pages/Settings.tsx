@@ -336,13 +336,48 @@ export default function Settings() {
               <strong style={styles.settingTitle}>Auto-Advance</strong>
               <p style={styles.settingDesc}>Automatically jump to the next question upon answering correctly.</p>
             </div>
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               checked={!!preferences.autoAdvance}
               onChange={e => handlePrefChange('autoAdvance', e.target.checked)}
               style={styles.checkbox}
             />
           </div>
+
+          <div style={styles.rowSetting}>
+            <div>
+              <strong style={styles.settingTitle}>Use Real JEE Mains PYQs</strong>
+              <p style={styles.settingDesc}>
+                Mix in actual JEE Mains previous-year questions (14,000+ available) alongside AI-generated ones. PYQs are graded questions with verified explanations and year/slot info.
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              checked={preferences.pyqEnabled !== false}
+              onChange={e => handlePrefChange('pyqEnabled', e.target.checked)}
+              style={styles.checkbox}
+            />
+          </div>
+
+          {preferences.pyqEnabled !== false && (
+            <div style={styles.rowSetting}>
+              <div>
+                <strong style={styles.settingTitle}>PYQ : AI Ratio</strong>
+                <p style={styles.settingDesc}>How many of each batch of 3 questions should be real PYQs vs AI-generated.</p>
+              </div>
+              <select
+                value={String(preferences.pyqRatio ?? 0.5)}
+                onChange={e => handlePrefChange('pyqRatio', parseFloat(e.target.value))}
+                style={styles.select}
+              >
+                <option value="0">All AI</option>
+                <option value="0.33">1 PYQ : 2 AI</option>
+                <option value="0.5">Half and half</option>
+                <option value="0.67">2 PYQ : 1 AI</option>
+                <option value="1">All PYQ</option>
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Notifications Settings Card */}

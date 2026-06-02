@@ -16,6 +16,8 @@ services:
         value: 3.11.10
       - key: DATABASE_PATH
         value: /opt/render/project/src/data/nexus_jee.db
+      - key: JEE_PYQ_CACHE_PATH
+        value: /opt/render/project/src/data/jee_pyq_cache
       - key: JWT_SECRET
         generateValue: true
       - key: FERNET_KEY

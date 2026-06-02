@@ -50,3 +50,6 @@ backend/nexus_jee.db*
 # ─── Python virtual environments ───
 backend/.venv/
 backend/__pycache__/
+
+# ─── JEE PYQ vendor cache (downloaded pickle) ───
+backend/vendor/jee_pyqs/core/cache/
