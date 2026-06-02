@@ -89,7 +89,24 @@ export default function Study() {
 
   // Session Stats (5-question block)
   const [blockQuestionIndex, setBlockQuestionIndex] = useState(0); // 0 to 4
-  const [sessionHistory, setSessionHistory] = useState<SessionHistoryEntry[]>([]); // tracks { question, userAnswer, isCorrect, timeSpent, scaffoldUsed }
+  const [sessionHistory, setSessionHistory] = useState<SessionHistoryEntry[]>(() => {
+    // Restore session history from localStorage on mount so Previous/Next
+    // works even after a page refresh, not just within a single render cycle.
+    if (typeof window === 'undefined') return [];
+    try {
+      const key = `nexus_study_history_${window.location.pathname}`;
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const parsed = JSON.parse(raw) as SessionHistoryEntry[];
+        return Array.isArray(parsed) ? parsed : [];
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  }); // tracks { question, userAnswer, isCorrect, timeSpent, scaffoldUsed }
+  // Ref mirror of sessionHistory so navigation handlers never see a stale value
+  const sessionHistoryRef = useRef<SessionHistoryEntry[]>(sessionHistory);
   const [sessionStats, setSessionStats] = useState({
     attempted: 0,
     solvedClean: 0,
@@ -143,6 +160,9 @@ export default function Study() {
         clearTimeout(autoAdvanceTimeoutRef.current);
         autoAdvanceTimeoutRef.current = null;
       }
+      // Don't clear session history on unmount — let it persist so
+      // Previous/Next works even after a brief re-mount. handleEndSession
+      // clears it explicitly when the user actually leaves.
     };
   }, []);
 
@@ -262,6 +282,21 @@ export default function Study() {
     }
   }, [currentQuestion]);
 
+  // Mirror sessionHistory into a ref so navigation handlers always see the
+  // latest value (handles stale closure issues in async callbacks), and
+  // persist it to localStorage so Previous/Next survives a page refresh.
+  useEffect(() => {
+    sessionHistoryRef.current = sessionHistory;
+    if (typeof window !== 'undefined') {
+      try {
+        const key = `nexus_study_history_${window.location.pathname}`;
+        localStorage.setItem(key, JSON.stringify(sessionHistory));
+      } catch {
+        // Storage full or unavailable — fail silently
+      }
+    }
+  }, [sessionHistory]);
+
   // Reset answer states
   const resetQuestionState = () => {
     setSelectedOption(null);
@@ -280,6 +315,21 @@ export default function Study() {
 
   const loadQuestion = useCallback(async (currentMood?: string) => {
     if (!chapter || isOffline) return;
+
+    // Safety net: if we already have a history entry for the current index
+    // (e.g. the user navigated Previous then Next), restore it instead of
+    // calling the AI again. The ref is always up-to-date.
+    const existing = sessionHistoryRef.current[blockQuestionIndex];
+    if (existing) {
+      setCurrentQuestion(existing.question);
+      setSelectedOption(existing.userAnswer);
+      setConfirmed(true);
+      setIsCorrect(existing.isCorrect);
+      setScaffoldTriggered(existing.scaffoldUsed);
+      setPhase('question');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     try {
@@ -287,7 +337,7 @@ export default function Study() {
       const difficultyIndex = Math.min(progress.currentDifficultyIndex, chapter.difficulty_curve.length - 1);
       const difficultyPoint = chapter.difficulty_curve[difficultyIndex];
       const conceptsLearned = storage.getConceptsLearned().map(c => c.concept);
-      const seenTexts = sessionHistory.map(h => h.question.question).filter(Boolean);
+      const seenTexts = sessionHistoryRef.current.map(h => h.question.question).filter(Boolean);
 
       const q = await generateQuestion(chapter, difficultyPoint, conceptsLearned, currentMood || mood || 'focused', {
         excludeQuestionTexts: seenTexts,
@@ -301,7 +351,7 @@ export default function Study() {
     } finally {
       setIsLoading(false);
     }
-  }, [chapter, chapterId, mood, isOffline]);
+  }, [chapter, chapterId, mood, isOffline, blockQuestionIndex]);
 
   const loadSpacedReviews = useCallback(async () => {
     if (isOffline) return;
@@ -379,11 +429,14 @@ export default function Study() {
       timeSpent: timeSpent,
       scaffoldUsed: scaffoldTriggered
     };
-    setSessionHistory(prev => {
-      const copy = [...prev];
-      copy[blockQuestionIndex] = historyEntry;
-      return copy;
-    });
+    // Use the ref so the index is always the current one (no stale closure)
+    const idx = blockQuestionIndex;
+    // Update the ref synchronously so handleNextQuestion can read the
+    // latest history even if it's called in the same React batch.
+    const nextHistory = [...sessionHistoryRef.current];
+    nextHistory[idx] = historyEntry;
+    sessionHistoryRef.current = nextHistory;
+    setSessionHistory(nextHistory);
 
     // Update sessions statistics
     setSessionStats(prev => ({
@@ -495,8 +548,8 @@ export default function Study() {
       const prevIdx = blockQuestionIndex - 1;
       setBlockQuestionIndex(prevIdx);
 
-      // Restore the state from sessionHistory
-      const hist = sessionHistory[prevIdx];
+      // Restore the state from sessionHistory — use ref for the latest value
+      const hist = sessionHistoryRef.current[prevIdx];
       if (hist) {
         setCurrentQuestion(hist.question);
         setSelectedOption(hist.userAnswer);
@@ -522,9 +575,11 @@ export default function Study() {
     } else {
       setBlockQuestionIndex(nextIdx);
 
-      // If we already have a historical question loaded for this index, restore it
-      if (sessionHistory[nextIdx]) {
-        const hist = sessionHistory[nextIdx];
+      // Restore from sessionHistory if the user already answered this question
+      // — use the ref to avoid stale closure issues. The ref is always
+      // up-to-date because handleConfirmAnswer updates it synchronously.
+      const hist = sessionHistoryRef.current[nextIdx];
+      if (hist) {
         setCurrentQuestion(hist.question);
         setSelectedOption(hist.userAnswer);
         setConfirmed(true);
@@ -722,6 +777,15 @@ export default function Study() {
       timeSpent: timerSeconds,
       concepts: sessionStats.newConcepts
     });
+
+    // Clear the persisted session history so the next session starts clean
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(`nexus_study_history_${window.location.pathname}`);
+      } catch {
+        // ignore
+      }
+    }
 
     navigate('/');
   };
