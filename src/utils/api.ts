@@ -245,11 +245,12 @@ export async function generateQuestion(
   difficultyPoint: string,
   conceptsAlreadyLearned: string[],
   mood: string,
-  options?: { excludeQuestionTexts?: string[]; difficulty?: 'easy' | 'medium' | 'hard' }
+  options?: { excludeQuestionTexts?: string[]; difficulty?: 'easy' | 'medium' | 'hard'; variationHint?: string }
 ): Promise<Record<string, unknown>> {
   const chapterId = chapter.id || chapter.name;
   const difficulty = options?.difficulty || 'medium';
   const exclude = options?.excludeQuestionTexts || [];
+  const variationHint = options?.variationHint;
 
   const moodInstruction = {
     focused: 'Normal JEE Mains difficulty. Standard question.',
@@ -262,6 +263,7 @@ Chapter: ${chapter.name}
 Current focus concept: ${difficultyPoint}
 Concepts student already knows: ${conceptsAlreadyLearned.join(', ') || 'none yet'}
 Mood adjustment: ${moodInstruction}
+${variationHint ? `\nIMPORTANT: ${variationHint}\nChoose a DIFFERENT scenario, numeric values, sub-topic, or angle than you would normally use. Avoid the most obvious/trite example for this concept.\n` : ''}
 
 The question must test "${difficultyPoint}" as the primary concept.
 If the student knows prerequisite concepts, the question may build on them naturally.

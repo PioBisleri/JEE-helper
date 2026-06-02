@@ -359,18 +359,41 @@ export default function Study() {
         ...questionQueueRef.current.map(q => (q as unknown as { question?: string }).question || ''),
       ].filter(Boolean);
 
+      // Distinct variation hints per batch slot — without this, the model
+      // tends to return near-identical questions for identical prompts
+      // (low temperature + parallel calls = same answer 3x).
+      const VARIATION_HINTS = [
+        'This is variation #1. Pick a numerical problem with a specific, non-trivial scenario.',
+        'This is variation #2. Pick a conceptual/theoretical angle, not a numerical one. Use a different sub-topic or applied context than you would for a typical question on this concept.',
+        'This is variation #3. Pick a graph/visualization-based or application-based question. Use distinctly different numbers/context than a standard example.',
+      ];
+
       const results = await Promise.allSettled(
-        Array.from({ length: BATCH_SIZE }, () =>
+        Array.from({ length: BATCH_SIZE }, (_, i) =>
           generateQuestion(chapter, difficultyPoint, conceptsLearned, currentMood || mood || 'focused', {
             excludeQuestionTexts: seenTexts,
+            variationHint: VARIATION_HINTS[i % VARIATION_HINTS.length],
           })
         )
       );
 
-      const questions: Question[] = results
+      const fulfilled = results
         .filter((r): r is PromiseFulfilledResult<Record<string, unknown>> => r.status === 'fulfilled')
         .map(r => r.value as unknown as Question)
         .filter(q => q && q.question && q.options);
+
+      // Dedupe by question text — the AI can still occasionally return the
+      // same response, and we never want to show the same question twice in
+      // a row.
+      const seenInBatch = new Set<string>();
+      const questions: Question[] = [];
+      for (const q of fulfilled) {
+        const text = (q.question || '').trim();
+        if (text && !seenInBatch.has(text) && !seenTexts.includes(text)) {
+          seenInBatch.add(text);
+          questions.push(q);
+        }
+      }
 
       if (questions.length > 0) {
         setQuestionQueue(prev => [...prev, ...questions]);
@@ -381,6 +404,39 @@ export default function Study() {
       return [];
     } finally {
       batchInFlightRef.current = false;
+    }
+  }, [chapter, chapterId, mood, isOffline]);
+
+  // Single-question generator — fallback when the batch dedup leaves us
+  // empty (e.g. all 3 parallel calls returned the same response despite
+  // variation hints). Generates one question with a fresh variation hint.
+  const generateSingle = useCallback(async (currentMood?: string): Promise<Question | null> => {
+    if (!chapter || isOffline) return null;
+    try {
+      const progress = storage.getChapterProgress(chapterId!);
+      const difficultyIndex = Math.min(progress.currentDifficultyIndex, chapter.difficulty_curve.length - 1);
+      const difficultyPoint = chapter.difficulty_curve[difficultyIndex];
+      const conceptsLearned = storage.getConceptsLearned().map(c => c.concept);
+      const seenTexts = [
+        ...sessionHistoryRef.current.map(h => h.question.question),
+        ...questionQueueRef.current.map(q => (q as unknown as { question?: string }).question || ''),
+      ].filter(Boolean);
+      const VARIATION_HINTS = [
+        'Use a fresh, unusual angle — maybe an application, derivation, or proof-based question.',
+        'Use a different numeric scale, units, or scenario than typical. Pick values that aren\'t round numbers.',
+        'Test the concept from a graph/diagram-based or qualitative perspective instead of pure calculation.',
+      ];
+      const hint = VARIATION_HINTS[Math.floor(Math.random() * VARIATION_HINTS.length)];
+      const result = await generateQuestion(chapter, difficultyPoint, conceptsLearned, currentMood || mood || 'focused', {
+        excludeQuestionTexts: seenTexts,
+        variationHint: hint,
+      });
+      if (result && result.question && result.options) {
+        return result as unknown as Question;
+      }
+      return null;
+    } catch {
+      return null;
     }
   }, [chapter, chapterId, mood, isOffline]);
 
@@ -429,8 +485,21 @@ export default function Study() {
         resetQuestionState();
         setPhase('question');
       } else {
-        setError(new Error('Could not generate questions'));
-        showToast('Error generating AI question', 'error');
+        // Batch deduped to nothing (all 3 came back identical) — try a single
+        // generation with a random variation hint as a last resort
+        const single = await generateSingle(currentMood);
+        if (single) {
+          setCurrentQuestion(single);
+          resetQuestionState();
+          setPhase('question');
+          // Trigger a background refill to repopulate the queue
+          if (!batchInFlightRef.current) {
+            refillQueue(currentMood).catch(() => {});
+          }
+        } else {
+          setError(new Error('Could not generate questions'));
+          showToast('Error generating AI question', 'error');
+        }
       }
     } catch (err) {
       setError(err);
@@ -438,7 +507,7 @@ export default function Study() {
     } finally {
       setIsLoading(false);
     }
-  }, [chapter, chapterId, mood, isOffline, blockQuestionIndex, refillQueue]);
+  }, [chapter, chapterId, mood, isOffline, blockQuestionIndex, refillQueue, generateSingle]);
 
   const loadSpacedReviews = useCallback(async () => {
     if (isOffline) return;
