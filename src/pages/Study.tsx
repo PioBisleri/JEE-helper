@@ -15,6 +15,7 @@ import {
 } from '../utils/api';
 import { pyqApi, getPYQChapterId, type PYQQuestion } from '../utils/pyqApi';
 import { markReviewed, getDueReviews } from '../utils/spaceRepetition';
+import { getCachedQuestion as getCachedQ } from '../utils/questionCache';
 import { logger } from '../utils/logger';
 import { useUser } from '../components/UserContext';
 import { useToast } from '../components/ToastContext';
@@ -518,6 +519,120 @@ export default function Study() {
       return null;
     }
   }, [chapter, chapterId, mood, isOffline, fetchPYQBatch, preferences.pyqEnabled]);
+
+  // ─── PREFETCH FULL SESSION BATCH (for "Keep Going" or test-like flows) ─
+  // Generates a full batch of `count` unique questions upfront, using
+  // all available sources in priority order:
+  //   1. PYQ (real JEE Mains questions, default ~50% of batch)
+  //   2. AI-generated (parallel calls with variation hints)
+  //   3. Local cache (offline / AI-failure fallback)
+  // Mirrors the pattern in TestPage.startTestLoading but mixes sources.
+  // Returns the questions in display order.
+  // `onProgress` is called after each source completes so the UI can
+  // show a live progress bar (e.g. "Generating 3/5…").
+  const prefetchSessionQuestions = useCallback(async (
+    count: number,
+    currentMood?: string,
+    onProgress?: (loaded: number) => void,
+  ): Promise<Question[]> => {
+    if (!chapter) return [];
+    const VARIATION_HINTS = [
+      'Pick a numerical problem with a specific, non-trivial scenario.',
+      'Pick a conceptual/theoretical angle, not a numerical one. Use a different sub-topic or applied context than you would for a typical question on this concept.',
+      'Pick a graph/visualization-based or application-based question. Use distinctly different numbers/context than a standard example.',
+      'Pick a question that requires multi-step reasoning, not a single formula application.',
+      'Pick a question with an unusual or counterintuitive setup that still has a clean answer.',
+    ];
+
+    const seen = new Set<string>();
+    const result: Question[] = [];
+    const pushIfNew = (q: Question | null | undefined): boolean => {
+      if (!q || !q.question || !q.options) return false;
+      const text = (q.question || '').trim();
+      if (!text || seen.has(text)) return false;
+      seen.add(text);
+      result.push(q);
+      return true;
+    };
+
+    // Source mix
+    const usePYQ = preferences.pyqEnabled !== false;
+    const ratio = preferences.pyqRatio ?? 0.5;
+    const pyqTarget = usePYQ ? Math.ceil(count * ratio) : 0;
+    const aiTarget = count - pyqTarget;
+
+    // Get a sense of what's already seen (for exclude lists)
+    const seenTextsForAI: string[] = [];
+    const seenPYQIds: string[] = [];
+
+    // Compute difficulty point
+    const progress = storage.getChapterProgress(chapter.id);
+    const difficultyIndex = Math.min(progress.currentDifficultyIndex, chapter.difficulty_curve.length - 1);
+    const difficultyPoint = chapter.difficulty_curve[difficultyIndex] || 'medium';
+    const conceptsLearned = storage.getConceptsLearned().map(c => c.concept);
+
+    // ── 1. PYQ BATCH ──
+    if (pyqTarget > 0) {
+      try {
+        const res = await pyqApi.getByChapter(getPYQChapterId(chapter.id || chapter.name) || '', {
+          difficulty: /easy/i.test(difficultyPoint) ? 'easy' : /hard/i.test(difficultyPoint) ? 'hard' : 'medium',
+          limit: pyqTarget,
+          excludeQuestionIds: seenPYQIds,
+        });
+        for (const q of (res.questions || []) as unknown as Question[]) {
+          if (result.length >= count) break;
+          pushIfNew(q);
+        }
+        onProgress?.(result.length);
+      } catch (err) {
+        logger.warn(`Keep Going: PYQ fetch failed: ${err instanceof Error ? err.message : String(err)}`);
+        onProgress?.(result.length);
+      }
+    }
+
+    // ── 2. AI BATCH (parallel with variation hints) ──
+    const aiNeeded = Math.max(0, count - result.length);
+    if (aiNeeded > 0 && !isOffline) {
+      // Build parallel AI calls with distinct variation hints
+      const slots = Array.from({ length: aiNeeded }, (_, i) => ({
+        variationHint: VARIATION_HINTS[i % VARIATION_HINTS.length],
+      }));
+      const results = await Promise.allSettled(
+        slots.map(s => generateQuestion(
+          chapter,
+          difficultyPoint,
+          conceptsLearned,
+          currentMood || mood || 'focused',
+          { excludeQuestionTexts: seenTextsForAI, variationHint: s.variationHint }
+        ))
+      );
+      for (const r of results) {
+        if (result.length >= count) break;
+        if (r.status === 'fulfilled') {
+          pushIfNew(r.value as unknown as Question);
+        }
+      }
+      onProgress?.(result.length);
+    }
+
+    // ── 3. CACHE FALLBACK (offline / AI / PYQ all short) ──
+    if (result.length < count) {
+      const stillNeeded = count - result.length;
+      // Try each difficulty point in the chapter's curve until we have enough
+      const points = chapter.difficulty_curve;
+      for (let i = 0; i < points.length && result.length < count; i++) {
+        const point = points[(difficultyIndex + i) % points.length];
+        for (let n = 0; n < stillNeeded && result.length < count; n++) {
+          const cached = getCachedQ(chapter.id, point, 'medium', Array.from(seen));
+          if (cached && pushIfNew(cached as unknown as Question)) continue;
+          break; // no more cached for this point
+        }
+      }
+      onProgress?.(result.length);
+    }
+
+    return result;
+  }, [chapter, mood, isOffline, preferences.pyqEnabled, preferences.pyqRatio]);
 
   const loadQuestion = useCallback(async (currentMood?: string) => {
     if (!chapter || isOffline) return;
@@ -1060,11 +1175,18 @@ export default function Study() {
   };
 
   // Continue a finished session with a fresh batch of questions. Unlike
-  // handleEndSession, this does NOT save to history or navigate away — it
-  // clears all in-memory state for the current session so the next
-  // loadQuestion call actually generates fresh questions instead of
-  // restoring old ones from sessionHistory.
-  const handleKeepGoing = () => {
+  // handleEndSession, this does NOT save to history or navigate away.
+  // Pre-generates a full batch of fresh questions using all available
+  // sources (PYQ + AI + cache) — mirrors the test-generation pattern
+  // in TestPage so the user gets a guaranteed-fresh set of questions
+  // every time they tap "Keep Going".
+  const [keepGoingProgress, setKeepGoingProgress] = useState<{ loaded: number; total: number } | null>(null);
+
+  const handleKeepGoing = async () => {
+    if (!chapter) return;
+    const total = preferences.questionsPerSession || 5;
+    setKeepGoingProgress({ loaded: 0, total });
+
     // Clear session history (state + ref + localStorage) so the safety net
     // in loadQuestion doesn't restore previously-answered questions
     setSessionHistory([]);
@@ -1076,10 +1198,6 @@ export default function Study() {
         // ignore
       }
     }
-    // Clear the pre-generated question queue so the AI generates a fresh
-    // batch (the old queue would be served to the user first)
-    setQuestionQueue([]);
-    questionQueueRef.current = [];
     // Reset per-question UI state
     setCurrentQuestion(null);
     setSelectedOption(null);
@@ -1092,12 +1210,40 @@ export default function Study() {
     setWrongAttempts(0);
     setShowWrongAccordion(false);
     setXpFloater(null);
-    // Reset session-level stats and index
+    // Reset session-level stats, index, and timer
     setBlockQuestionIndex(0);
     setSessionStats({ attempted: 0, solvedClean: 0, scaffoldedConcepts: [], newConcepts: [] });
-    // Switch back to the question phase and generate a fresh batch
-    setPhase('question');
-    loadQuestion();
+    setTimerSeconds(0);
+
+    try {
+      // Generate the full batch using all sources. Progress is reported
+      // as each source completes (PYQ → AI → cache), so the user sees
+      // the bar fill in real time instead of staring at a spinner.
+      const questions = await prefetchSessionQuestions(total, undefined, (loaded) => {
+        setKeepGoingProgress({ loaded, total });
+      });
+
+      if (questions.length === 0) {
+        showToast('Could not generate any new questions. Try again.', 'error');
+        setKeepGoingProgress(null);
+        return;
+      }
+
+      // First question goes to currentQuestion, rest go in the queue
+      const [first, ...rest] = questions;
+      setCurrentQuestion(first);
+      setQuestionQueue(rest);
+      questionQueueRef.current = rest;
+      resetQuestionState();
+      setPhase('question');
+      setKeepGoingProgress({ loaded: questions.length, total });
+    } catch (err) {
+      logger.error(`Keep Going failed: ${err instanceof Error ? err.message : String(err)}`);
+      showToast('Error generating new questions', 'error');
+    } finally {
+      // Clear progress after a short delay so user sees "X/Y" briefly
+      setTimeout(() => setKeepGoingProgress(null), 1200);
+    }
   };
 
   if (!chapter) {
@@ -1549,12 +1695,33 @@ export default function Study() {
                   </button>
                   <button
                     className="btn btn-primary"
-                    style={styles.halfBtn}
+                    style={{ ...styles.halfBtn, opacity: keepGoingProgress ? 0.6 : 1 }}
                     onClick={handleKeepGoing}
+                    disabled={!!keepGoingProgress}
                   >
-                    Keep Going
+                    {keepGoingProgress
+                      ? keepGoingProgress.loaded >= keepGoingProgress.total
+                        ? 'Ready!'
+                        : `Generating ${keepGoingProgress.loaded}/${keepGoingProgress.total}…`
+                      : 'Keep Going'}
                   </button>
                 </div>
+
+                {keepGoingProgress && keepGoingProgress.loaded < keepGoingProgress.total && (
+                  <div style={{ marginTop: '12px', width: '100%', textAlign: 'center' }}>
+                    <div style={styles.keepGoingBar}>
+                      <div
+                        style={{
+                          ...styles.keepGoingBarFill,
+                          width: `${Math.round((keepGoingProgress.loaded / Math.max(1, keepGoingProgress.total)) * 100)}%`,
+                        }}
+                      />
+                    </div>
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>
+                      Pulling fresh questions from PYQs, AI, and your local cache…
+                    </p>
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -2218,5 +2385,17 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     gap: '12px',
     marginTop: '12px'
+  },
+  keepGoingBar: {
+    width: '100%',
+    height: '6px',
+    borderRadius: '3px',
+    backgroundColor: 'var(--bg-secondary)',
+    overflow: 'hidden',
+  },
+  keepGoingBarFill: {
+    height: '100%',
+    backgroundColor: 'var(--accent)',
+    transition: 'width 0.3s ease-out',
   }
 };
