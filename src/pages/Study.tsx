@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CHAPTERS } from '../data/chapters';
 import { storage } from '../utils/storage';
@@ -107,6 +107,12 @@ export default function Study() {
   }); // tracks { question, userAnswer, isCorrect, timeSpent, scaffoldUsed }
   // Ref mirror of sessionHistory so navigation handlers never see a stale value
   const sessionHistoryRef = useRef<SessionHistoryEntry[]>(sessionHistory);
+  // Pre-generated question queue — AI generates a batch up front so the timer
+  // only ticks when a question is actually on screen (not while the user waits
+  // for the network/AI to produce the next one).
+  const [questionQueue, setQuestionQueue] = useState<Question[]>([]);
+  const questionQueueRef = useRef<Question[]>([]);
+  const batchInFlightRef = useRef<boolean>(false);
   const [sessionStats, setSessionStats] = useState({
     attempted: 0,
     solvedClean: 0,
@@ -202,17 +208,34 @@ export default function Study() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Timer runner
+  // Timer runner — only ticks while the user actually has a question to
+  // attempt. Pauses during mood selection, summary, when no question is
+  // loaded, when the AI is generating a batch, and after the user has
+  // confirmed their answer (waiting for them to hit Next).
+  const shouldTimerRun = useMemo(() => {
+    if (phase === 'mood' || phase === 'summary') return false;
+    if (isLoading) return false;
+    if (!currentQuestion) return false;
+    if (confirmed) return false; // waiting on Next click, not actively solving
+    return true;
+  }, [phase, isLoading, currentQuestion, confirmed]);
+
   useEffect(() => {
-    if (phase !== 'mood' && phase !== 'summary') {
+    if (shouldTimerRun) {
       timerIntervalRef.current = setInterval(() => {
         setTimerSeconds(prev => prev + 1);
       }, 1000);
     } else if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
     }
-    return () => { if (timerIntervalRef.current) clearInterval(timerIntervalRef.current); };
-  }, [phase]);
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    };
+  }, [shouldTimerRun]);
 
   // Handle shortcut mappings
   useEffect(() => {
@@ -297,6 +320,11 @@ export default function Study() {
     }
   }, [sessionHistory]);
 
+  // Mirror the question queue into a ref so async callbacks see the latest value
+  useEffect(() => {
+    questionQueueRef.current = questionQueue;
+  }, [questionQueue]);
+
   // Reset answer states
   const resetQuestionState = () => {
     setSelectedOption(null);
@@ -312,6 +340,49 @@ export default function Study() {
   };
 
   // ─── API LOADERS ───
+
+  // Refill the question queue by generating BATCH_SIZE questions in parallel.
+  // Caller awaits this for the first batch; subsequent refills are fire-and-forget
+  // so the user never waits. Idempotent: safe to call multiple times.
+  const refillQueue = useCallback(async (currentMood?: string): Promise<Question[]> => {
+    if (!chapter || isOffline) return [];
+    if (batchInFlightRef.current) return [];
+    batchInFlightRef.current = true;
+    try {
+      const BATCH_SIZE = 3;
+      const progress = storage.getChapterProgress(chapterId!);
+      const difficultyIndex = Math.min(progress.currentDifficultyIndex, chapter.difficulty_curve.length - 1);
+      const difficultyPoint = chapter.difficulty_curve[difficultyIndex];
+      const conceptsLearned = storage.getConceptsLearned().map(c => c.concept);
+      const seenTexts = [
+        ...sessionHistoryRef.current.map(h => h.question.question),
+        ...questionQueueRef.current.map(q => (q as unknown as { question?: string }).question || ''),
+      ].filter(Boolean);
+
+      const results = await Promise.allSettled(
+        Array.from({ length: BATCH_SIZE }, () =>
+          generateQuestion(chapter, difficultyPoint, conceptsLearned, currentMood || mood || 'focused', {
+            excludeQuestionTexts: seenTexts,
+          })
+        )
+      );
+
+      const questions: Question[] = results
+        .filter((r): r is PromiseFulfilledResult<Record<string, unknown>> => r.status === 'fulfilled')
+        .map(r => r.value as unknown as Question)
+        .filter(q => q && q.question && q.options);
+
+      if (questions.length > 0) {
+        setQuestionQueue(prev => [...prev, ...questions]);
+        questionQueueRef.current = [...questionQueueRef.current, ...questions];
+      }
+      return questions;
+    } catch {
+      return [];
+    } finally {
+      batchInFlightRef.current = false;
+    }
+  }, [chapter, chapterId, mood, isOffline]);
 
   const loadQuestion = useCallback(async (currentMood?: string) => {
     if (!chapter || isOffline) return;
@@ -330,28 +401,44 @@ export default function Study() {
       return;
     }
 
+    // Try the pre-generated queue first — instant, no waiting on the AI
+    const fromQueue = questionQueueRef.current[0];
+    if (fromQueue) {
+      setQuestionQueue(prev => prev.slice(1));
+      questionQueueRef.current = questionQueueRef.current.slice(1);
+      setCurrentQuestion(fromQueue);
+      resetQuestionState();
+      setPhase('question');
+      // Background-refill if the queue is getting low (don't make the user wait)
+      if (questionQueueRef.current.length < 2 && !batchInFlightRef.current) {
+        refillQueue(currentMood).catch(() => {});
+      }
+      return;
+    }
+
+    // Queue is empty — show loading state and generate a batch
     setIsLoading(true);
     setError(null);
     try {
-      const progress = storage.getChapterProgress(chapterId!);
-      const difficultyIndex = Math.min(progress.currentDifficultyIndex, chapter.difficulty_curve.length - 1);
-      const difficultyPoint = chapter.difficulty_curve[difficultyIndex];
-      const conceptsLearned = storage.getConceptsLearned().map(c => c.concept);
-      const seenTexts = sessionHistoryRef.current.map(h => h.question.question).filter(Boolean);
-
-      const q = await generateQuestion(chapter, difficultyPoint, conceptsLearned, currentMood || mood || 'focused', {
-        excludeQuestionTexts: seenTexts,
-      });
-      setCurrentQuestion(q as unknown as Question);
-      resetQuestionState();
-      setPhase('question');
+      const questions = await refillQueue(currentMood);
+      if (questions.length > 0) {
+        const [first, ...rest] = questions;
+        setQuestionQueue(rest);
+        questionQueueRef.current = rest;
+        setCurrentQuestion(first);
+        resetQuestionState();
+        setPhase('question');
+      } else {
+        setError(new Error('Could not generate questions'));
+        showToast('Error generating AI question', 'error');
+      }
     } catch (err) {
       setError(err);
       showToast('Error generating AI question', 'error');
     } finally {
       setIsLoading(false);
     }
-  }, [chapter, chapterId, mood, isOffline, blockQuestionIndex]);
+  }, [chapter, chapterId, mood, isOffline, blockQuestionIndex, refillQueue]);
 
   const loadSpacedReviews = useCallback(async () => {
     if (isOffline) return;
@@ -587,7 +674,21 @@ export default function Study() {
         setScaffoldTriggered(hist.scaffoldUsed);
         setPhase('question');
       } else {
-        loadQuestion();
+        // No history — pull from the pre-generated queue (instant), and
+        // trigger a background refill so the queue stays warm.
+        const fromQueue = questionQueueRef.current[0];
+        if (fromQueue) {
+          setQuestionQueue(prev => prev.slice(1));
+          questionQueueRef.current = questionQueueRef.current.slice(1);
+          setCurrentQuestion(fromQueue);
+          resetQuestionState();
+          setPhase('question');
+          if (questionQueueRef.current.length < 2 && !batchInFlightRef.current) {
+            refillQueue().catch(() => {});
+          }
+        } else {
+          loadQuestion();
+        }
       }
     }
   };
@@ -1082,42 +1183,47 @@ export default function Study() {
                   </div>
                 )}
 
-                {/* Confirm Button — sits above Previous/Next, only when an option
-                    is selected and not yet confirmed. Slides up on appear. */}
-                {selectedOption && !confirmed && (
-                  <motion.div
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    style={{ marginTop: '16px' }}
-                  >
-                    <button
-                      style={styles.confirmInlineButton}
-                      className="btn btn-primary"
-                      onClick={handleConfirmAnswer}
+                {/* Confirm Button + Previous/Next — wrapped in a single footer
+                    container so the layout is identical on mobile and PC. The
+                    footer lives in the document flow (not fixed) and scrolls
+                    naturally with the question card. */}
+                <div style={styles.questionFooter}>
+                  {/* Confirm Button — only when an option is selected and not yet
+                      confirmed. Sits ABOVE the Previous/Next row. */}
+                  {selectedOption && !confirmed && (
+                    <motion.div
+                      initial={{ y: 10, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
                     >
-                      Confirm Selection
-                    </button>
-                  </motion.div>
-                )}
+                      <button
+                        style={styles.confirmInlineButton}
+                        className="btn btn-primary"
+                        onClick={handleConfirmAnswer}
+                      >
+                        Confirm Selection
+                      </button>
+                    </motion.div>
+                  )}
 
-                {/* Previous / Next Navigation Row */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', gap: '16px' }}>
-                  <button 
-                    className="btn btn-secondary"
-                    style={{ flex: 1, height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    disabled={blockQuestionIndex === 0}
-                    onClick={handlePreviousQuestion}
-                  >
-                    ← Previous
-                  </button>
-                  <button 
-                    className="btn btn-primary"
-                    style={{ flex: 1, height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    disabled={!confirmed && blockQuestionIndex >= sessionHistory.length}
-                    onClick={handleNextQuestion}
-                  >
-                    Next →
-                  </button>
+                  {/* Previous / Next Navigation Row */}
+                  <div style={styles.navRow}>
+                    <button
+                      className="btn btn-secondary"
+                      style={styles.navButton}
+                      disabled={blockQuestionIndex === 0}
+                      onClick={handlePreviousQuestion}
+                    >
+                      ← Previous
+                    </button>
+                    <button
+                      className="btn btn-primary"
+                      style={styles.navButton}
+                      disabled={!confirmed && blockQuestionIndex >= sessionHistory.length}
+                      onClick={handleNextQuestion}
+                    >
+                      Next →
+                    </button>
+                  </div>
                 </div>
 
               </motion.div>
@@ -1612,7 +1718,30 @@ const styles: Record<string, React.CSSProperties> = {
     width: '100%',
     height: '48px',
     fontSize: '15px',
-    fontWeight: 600
+    fontWeight: 600,
+    marginBottom: '12px'
+  },
+  questionFooter: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    marginTop: '20px',
+    gap: '12px'
+  },
+  navRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '12px',
+    width: '100%'
+  },
+  navButton: {
+    flex: 1,
+    height: '44px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '14px'
   },
   resultBox: {
     marginTop: '16px',
