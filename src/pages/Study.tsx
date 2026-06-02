@@ -980,6 +980,47 @@ export default function Study() {
     }
   };
 
+  // Continue a finished session with a fresh batch of questions. Unlike
+  // handleEndSession, this does NOT save to history or navigate away — it
+  // clears all in-memory state for the current session so the next
+  // loadQuestion call actually generates fresh questions instead of
+  // restoring old ones from sessionHistory.
+  const handleKeepGoing = () => {
+    // Clear session history (state + ref + localStorage) so the safety net
+    // in loadQuestion doesn't restore previously-answered questions
+    setSessionHistory([]);
+    sessionHistoryRef.current = [];
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(`nexus_study_history_${window.location.pathname}`);
+      } catch {
+        // ignore
+      }
+    }
+    // Clear the pre-generated question queue so the AI generates a fresh
+    // batch (the old queue would be served to the user first)
+    setQuestionQueue([]);
+    questionQueueRef.current = [];
+    // Reset per-question UI state
+    setCurrentQuestion(null);
+    setSelectedOption(null);
+    setConfirmed(false);
+    setIsCorrect(false);
+    setScaffoldTriggered(false);
+    setHintText('');
+    setShowHintPanel(false);
+    setHintUsedInQuestion(false);
+    setWrongAttempts(0);
+    setShowWrongAccordion(false);
+    setXpFloater(null);
+    // Reset session-level stats and index
+    setBlockQuestionIndex(0);
+    setSessionStats({ attempted: 0, solvedClean: 0, scaffoldedConcepts: [], newConcepts: [] });
+    // Switch back to the question phase and generate a fresh batch
+    setPhase('question');
+    loadQuestion();
+  };
+
   if (!chapter) {
     return (
       <div style={styles.errorScreen}>
@@ -1427,14 +1468,10 @@ export default function Study() {
                   <button className="btn btn-secondary" style={styles.halfBtn} onClick={handleEndSession}>
                     End Session
                   </button>
-                  <button 
-                    className="btn btn-primary" 
-                    style={styles.halfBtn} 
-                    onClick={() => {
-                      setBlockQuestionIndex(0);
-                      setSessionStats({ attempted: 0, solvedClean: 0, scaffoldedConcepts: [], newConcepts: [] });
-                      loadQuestion();
-                    }}
+                  <button
+                    className="btn btn-primary"
+                    style={styles.halfBtn}
+                    onClick={handleKeepGoing}
                   >
                     Keep Going
                   </button>
