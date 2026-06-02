@@ -523,13 +523,15 @@ export default function Study() {
   // ─── PREFETCH FULL SESSION BATCH (for "Keep Going" or test-like flows) ─
   // Generates a full batch of `count` unique questions upfront, using
   // all available sources in priority order:
-  //   1. PYQ (real JEE Mains questions, default ~50% of batch)
+  //   1. PYQ (real JEE Mains questions, default ~50% of batch) — overshoot
+  //      request so dedup doesn't leave us short
   //   2. AI-generated (parallel calls with variation hints)
-  //   3. Local cache (offline / AI-failure fallback)
-  // Mirrors the pattern in TestPage.startTestLoading but mixes sources.
-  // Returns the questions in display order.
-  // `onProgress` is called after each source completes so the UI can
-  // show a live progress bar (e.g. "Generating 3/5…").
+  //   3. AI retry rounds (if still short, sequential with fresh hints)
+  //   4. Local cache (offline / AI-failure fallback)
+  // Returns up to `count` unique questions. The caller is responsible for
+  // handling the case where fewer than `count` were generated.
+  // `onProgress` is called after each phase completes so the UI can show
+  // a live progress bar (e.g. "Generating 3/5…").
   const prefetchSessionQuestions = useCallback(async (
     count: number,
     currentMood?: string,
@@ -542,6 +544,8 @@ export default function Study() {
       'Pick a graph/visualization-based or application-based question. Use distinctly different numbers/context than a standard example.',
       'Pick a question that requires multi-step reasoning, not a single formula application.',
       'Pick a question with an unusual or counterintuitive setup that still has a clean answer.',
+      'Pick a problem where the answer is a clean integer or simple fraction, not a complex expression.',
+      'Pick a conceptual question that tests understanding, not a calculation.',
     ];
 
     const seen = new Set<string>();
@@ -555,15 +559,14 @@ export default function Study() {
       return true;
     };
 
-    // Source mix
+    // Source mix — overshoot from PYQ by 50% to absorb dedup losses, and
+    // always make sure AI covers the rest of the count regardless of
+    // ratio. If PYQ shortfalls (chapter id unknown, chapter has few
+    // questions), AI fills the gap.
     const usePYQ = preferences.pyqEnabled !== false;
     const ratio = preferences.pyqRatio ?? 0.5;
-    const pyqTarget = usePYQ ? Math.ceil(count * ratio) : 0;
-    const aiTarget = count - pyqTarget;
-
-    // Get a sense of what's already seen (for exclude lists)
-    const seenTextsForAI: string[] = [];
-    const seenPYQIds: string[] = [];
+    const pyqTarget = usePYQ ? Math.ceil(count * ratio * 1.5) : 0;
+    const aiTarget = count;
 
     // Compute difficulty point
     const progress = storage.getChapterProgress(chapter.id);
@@ -571,58 +574,79 @@ export default function Study() {
     const difficultyPoint = chapter.difficulty_curve[difficultyIndex] || 'medium';
     const conceptsLearned = storage.getConceptsLearned().map(c => c.concept);
 
-    // ── 1. PYQ BATCH ──
+    // ── 1. PYQ BATCH (single API call, excludes seen IDs) ──
     if (pyqTarget > 0) {
       try {
-        const res = await pyqApi.getByChapter(getPYQChapterId(chapter.id || chapter.name) || '', {
-          difficulty: /easy/i.test(difficultyPoint) ? 'easy' : /hard/i.test(difficultyPoint) ? 'hard' : 'medium',
-          limit: pyqTarget,
-          excludeQuestionIds: seenPYQIds,
-        });
-        for (const q of (res.questions || []) as unknown as Question[]) {
+        const pyqQuestions = await fetchPYQBatch(pyqTarget, currentMood);
+        for (const q of pyqQuestions) {
           if (result.length >= count) break;
           pushIfNew(q);
         }
         onProgress?.(result.length);
       } catch (err) {
-        logger.warn(`Keep Going: PYQ fetch failed: ${err instanceof Error ? err.message : String(err)}`);
+        logger.warn(`Prefetch: PYQ fetch failed: ${err instanceof Error ? err.message : String(err)}`);
         onProgress?.(result.length);
       }
     }
 
     // ── 2. AI BATCH (parallel with variation hints) ──
-    const aiNeeded = Math.max(0, count - result.length);
-    if (aiNeeded > 0 && !isOffline) {
-      // Build parallel AI calls with distinct variation hints
-      const slots = Array.from({ length: aiNeeded }, (_, i) => ({
-        variationHint: VARIATION_HINTS[i % VARIATION_HINTS.length],
-      }));
-      const results = await Promise.allSettled(
-        slots.map(s => generateQuestion(
-          chapter,
-          difficultyPoint,
-          conceptsLearned,
-          currentMood || mood || 'focused',
-          { excludeQuestionTexts: seenTextsForAI, variationHint: s.variationHint }
-        ))
-      );
-      for (const r of results) {
-        if (result.length >= count) break;
-        if (r.status === 'fulfilled') {
-          pushIfNew(r.value as unknown as Question);
+    // Always target `count` from AI alone, so we have a full batch even
+    // if PYQ returned nothing. Dedup will keep only the unique ones.
+    if (!isOffline) {
+      const aiNeeded = Math.max(0, count - result.length);
+      if (aiNeeded > 0) {
+        const slots = Array.from({ length: aiNeeded }, (_, i) => ({
+          variationHint: VARIATION_HINTS[i % VARIATION_HINTS.length],
+        }));
+        const results = await Promise.allSettled(
+          slots.map(s => generateQuestion(
+            chapter,
+            difficultyPoint,
+            conceptsLearned,
+            currentMood || mood || 'focused',
+            { excludeQuestionTexts: Array.from(seen), variationHint: s.variationHint }
+          ))
+        );
+        for (const r of results) {
+          if (result.length >= count) break;
+          if (r.status === 'fulfilled') {
+            pushIfNew(r.value as unknown as Question);
+          }
+        }
+        onProgress?.(result.length);
+      }
+
+      // ── 3. AI RETRY (sequential, fresh hints) if still short ──
+      // Up to 2 more rounds, 1 question per round, to top up.
+      let retryRound = 0;
+      while (result.length < count && retryRound < 2 && !isOffline) {
+        retryRound++;
+        try {
+          const hint = VARIATION_HINTS[(result.length + retryRound) % VARIATION_HINTS.length];
+          const q = await generateQuestion(
+            chapter,
+            difficultyPoint,
+            conceptsLearned,
+            currentMood || mood || 'focused',
+            { excludeQuestionTexts: Array.from(seen), variationHint: hint }
+          );
+          pushIfNew(q as unknown as Question);
+          onProgress?.(result.length);
+        } catch (err) {
+          logger.warn(`Prefetch: AI retry ${retryRound} failed: ${err instanceof Error ? err.message : String(err)}`);
         }
       }
-      onProgress?.(result.length);
     }
 
-    // ── 3. CACHE FALLBACK (offline / AI / PYQ all short) ──
+    // ── 4. CACHE FALLBACK (offline / AI / PYQ all short) ──
     if (result.length < count) {
-      const stillNeeded = count - result.length;
       // Try each difficulty point in the chapter's curve until we have enough
       const points = chapter.difficulty_curve;
       for (let i = 0; i < points.length && result.length < count; i++) {
         const point = points[(difficultyIndex + i) % points.length];
-        for (let n = 0; n < stillNeeded && result.length < count; n++) {
+        // Try a few times per point — getCachedQ is random, so calling
+        // it multiple times with an updated exclude list can find more
+        for (let n = 0; n < 3 && result.length < count; n++) {
           const cached = getCachedQ(chapter.id, point, 'medium', Array.from(seen));
           if (cached && pushIfNew(cached as unknown as Question)) continue;
           break; // no more cached for this point
@@ -666,27 +690,30 @@ export default function Study() {
       return;
     }
 
-    // Queue is empty — show loading state and generate a batch
+    // Queue is empty (mid-session: prefetch didn't generate enough).
+    // Show a "Generating next question…" state and use prefetchSessionQuestions
+    // for a more robust attempt (overshoot from PYQ, AI retry, cache fallback).
+    // Only show the error toast if even prefetchSessionQuestions can't
+    // produce a question after multiple sources.
     setIsLoading(true);
     setError(null);
     try {
-      const questions = await refillQueue(currentMood);
+      const questions = await prefetchSessionQuestions(1, currentMood);
       if (questions.length > 0) {
-        const [first, ...rest] = questions;
-        setQuestionQueue(rest);
-        questionQueueRef.current = rest;
-        setCurrentQuestion(first);
+        setCurrentQuestion(questions[0]);
         resetQuestionState();
         setPhase('question');
+        // Trigger a background refill to repopulate the queue
+        if (!batchInFlightRef.current) {
+          refillQueue(currentMood).catch(() => {});
+        }
       } else {
-        // Batch deduped to nothing (all 3 came back identical) — try a single
-        // generation with a random variation hint as a last resort
+        // Last-resort: try a single AI call with a random variation hint
         const single = await generateSingle(currentMood);
         if (single) {
           setCurrentQuestion(single);
           resetQuestionState();
           setPhase('question');
-          // Trigger a background refill to repopulate the queue
           if (!batchInFlightRef.current) {
             refillQueue(currentMood).catch(() => {});
           }
@@ -701,7 +728,7 @@ export default function Study() {
     } finally {
       setIsLoading(false);
     }
-  }, [chapter, chapterId, mood, isOffline, blockQuestionIndex, refillQueue, generateSingle]);
+  }, [chapter, chapterId, mood, isOffline, blockQuestionIndex, refillQueue, generateSingle, prefetchSessionQuestions]);
 
   const loadSpacedReviews = useCallback(async () => {
     if (isOffline) return;
@@ -1180,6 +1207,10 @@ export default function Study() {
   // sources (PYQ + AI + cache) — mirrors the test-generation pattern
   // in TestPage so the user gets a guaranteed-fresh set of questions
   // every time they tap "Keep Going".
+  //
+  // IMPORTANT: we generate the new questions FIRST, then clear old
+  // state. If generation fails, the user stays on the summary screen
+  // with their previous session intact and can retry.
   const [keepGoingProgress, setKeepGoingProgress] = useState<{ loaded: number; total: number } | null>(null);
 
   const handleKeepGoing = async () => {
@@ -1187,8 +1218,25 @@ export default function Study() {
     const total = preferences.questionsPerSession || 5;
     setKeepGoingProgress({ loaded: 0, total });
 
-    // Clear session history (state + ref + localStorage) so the safety net
-    // in loadQuestion doesn't restore previously-answered questions
+    // Generate first — if this throws or returns 0, the old session
+    // remains intact and the user can try again.
+    let questions: Question[] = [];
+    try {
+      questions = await prefetchSessionQuestions(total, undefined, (loaded) => {
+        setKeepGoingProgress({ loaded, total });
+      });
+    } catch (err) {
+      logger.error(`Keep Going: prefetch threw: ${err instanceof Error ? err.message : String(err)}`);
+    }
+
+    if (questions.length === 0) {
+      showToast('Could not generate new questions. Please check your connection and try again.', 'error');
+      setKeepGoingProgress(null);
+      return; // Keep old state intact so user can retry
+    }
+
+    // We have new questions — NOW clear old state so the safety net in
+    // loadQuestion / handleNextQuestion doesn't restore old answers.
     setSessionHistory([]);
     sessionHistoryRef.current = [];
     if (typeof window !== 'undefined') {
@@ -1215,35 +1263,17 @@ export default function Study() {
     setSessionStats({ attempted: 0, solvedClean: 0, scaffoldedConcepts: [], newConcepts: [] });
     setTimerSeconds(0);
 
-    try {
-      // Generate the full batch using all sources. Progress is reported
-      // as each source completes (PYQ → AI → cache), so the user sees
-      // the bar fill in real time instead of staring at a spinner.
-      const questions = await prefetchSessionQuestions(total, undefined, (loaded) => {
-        setKeepGoingProgress({ loaded, total });
-      });
+    // First question goes to currentQuestion, rest go in the queue
+    const [first, ...rest] = questions;
+    setCurrentQuestion(first);
+    setQuestionQueue(rest);
+    questionQueueRef.current = rest;
+    resetQuestionState();
+    setPhase('question');
+    setKeepGoingProgress({ loaded: questions.length, total });
 
-      if (questions.length === 0) {
-        showToast('Could not generate any new questions. Try again.', 'error');
-        setKeepGoingProgress(null);
-        return;
-      }
-
-      // First question goes to currentQuestion, rest go in the queue
-      const [first, ...rest] = questions;
-      setCurrentQuestion(first);
-      setQuestionQueue(rest);
-      questionQueueRef.current = rest;
-      resetQuestionState();
-      setPhase('question');
-      setKeepGoingProgress({ loaded: questions.length, total });
-    } catch (err) {
-      logger.error(`Keep Going failed: ${err instanceof Error ? err.message : String(err)}`);
-      showToast('Error generating new questions', 'error');
-    } finally {
-      // Clear progress after a short delay so user sees "X/Y" briefly
-      setTimeout(() => setKeepGoingProgress(null), 1200);
-    }
+    // Clear progress after a short delay so user sees "X/Y" briefly
+    setTimeout(() => setKeepGoingProgress(null), 1200);
   };
 
   if (!chapter) {
